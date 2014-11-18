@@ -1,6 +1,6 @@
-module bookstore.api;
+module bookstore.products.api;
 
-import bookstore.domain;
+import bookstore.products.domain;
 
 struct BookDto {
 	string bookId;

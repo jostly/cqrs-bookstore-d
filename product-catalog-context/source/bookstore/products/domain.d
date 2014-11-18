@@ -1,4 +1,4 @@
-module bookstore.domain;
+module bookstore.products.domain;
 
 import cqrslib.domain;
 import std.typecons;

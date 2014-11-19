@@ -34,5 +34,6 @@ class ValueObject(alias T) {
 
 }
 
+// class name for a type, accessible at compile time
 private static auto className(T)() { return __traits(identifier, T); }
 */

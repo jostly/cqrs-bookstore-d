@@ -1,3 +1,10 @@
 {
-	"name": "order-context"
+	"name": "order-context",
+	"dependencies": {
+		"cqrs-lib": { "path": "../cqrs-lib/" },
+		"vibe-d": ">=0.7.17",
+		"specd": "~develop"
+	},
+	"targetType": "executable",
+	"versions": ["VibeDefaultMain"]	
 }

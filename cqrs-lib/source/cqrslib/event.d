@@ -1,7 +1,6 @@
 module cqrslib.event;
 
 import cqrslib.base;
-import std.conv;
 
 class DomainEvent(T : GenericId) {
 
@@ -21,18 +20,9 @@ public:
 		this.timestamp_ = timestamp;
 	}
 
-	// TODO: equals, hash, tostring
+	// TODO: equals, hash
 
 	override string toString() {
-		auto fields = this.tupleof;
-		string b = this.classinfo.name ~ "(";
-		foreach(i, t; fields) {
-			if (i > 0) {
-				b ~= ", ";
-			}
-			b ~= text(t);
-		}
-		return b ~ ")";
+		return classToString(this, aggregateId, revision, timestamp);
 	}
-	
 }

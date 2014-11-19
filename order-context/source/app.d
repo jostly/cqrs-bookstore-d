@@ -6,8 +6,15 @@ shared static this()
 {
 	auto time = Clock.currTime();
 
-	auto t = new OrderPlacedEvent(OrderId.randomId(), 1, time.toUnixTime() * 1000 + time.fracSec.msecs);
+	auto t = new OrderPlacedEvent(
+		OrderId.randomId(), 
+		1, 
+		time.toUnixTime() * 1000 + time.fracSec.msecs,
+		new CustomerInformation("Hermerker Homolka", "hermerker@homolka.net", "Home Address")
+	);
 	logInfo("Your order is " ~ text(t));
+	logInfo("Order in Json: " ~ text(t.toJson));
+	logInfo("Reserialized from json: " ~ text(OrderPlacedEvent.fromJson(t.toJson)));
 
 	auto api = new QueryResource;
 

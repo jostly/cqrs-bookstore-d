@@ -1,5 +1,7 @@
 module cqrslib.base;
 
+import std.traits, std.conv;
+
 class GenericId {
 	// Import scoped on class - anything inhering GenericId will have access to std.uuid
 	import std.uuid; 
@@ -22,21 +24,29 @@ class GenericId {
 	}
 
 	override string toString() {
-		import std.string;
-
-		// inner function is not visible outside enclosing function
-		// must be defined before it is used!
-		string lastPartOf(string input) {
-			auto i = input.lastIndexOf('.');
-			// string is an array of char, and a substring is taken using array range notation
-			// if no . is in the string, lastIndexOf returns -1, and the array range becomes
-			// [0..$] which is the entire string, so no special handling required for that case
-			return input[i+1..$];
-		}
-
-		// this.classinfo gives runtime information about the class
-		// the name is fully qualified with modules (a.b.c.Foo), so we look for the part
-		// after the last dot
-		return lastPartOf(this.classinfo.name) ~ "(" ~ id ~ ")";
+		return classToString(this, id);
 	}
+}
+
+private string stringOf(A)(A a) {
+	static if (isSomeString!A) return "\"" ~ a ~ "\"";
+	else static if (isSomeChar!A) return "'" ~ text(a) ~ "'";
+	else return text(a);
+}
+
+private string varargsToList(A...)(A a) {
+	static if (a.length == 0) return "";
+	else static if (a.length == 1) return stringOf(a[0]);
+	else return stringOf(a[0]) ~ ", " ~ varargsToList(a[1..$]);
+}
+
+private string lastPartOf(string input) {
+	import std.string;
+	auto i = input.lastIndexOf('.');
+	return input[i+1..$];
+}
+
+string classToString(A...)(Object self, A a) {
+	static if (a.length == 0) return lastPartOf(self.classinfo.name) ~ "()";
+	else return lastPartOf(self.classinfo.name) ~ "(" ~ varargsToList(a) ~ ")";
 }

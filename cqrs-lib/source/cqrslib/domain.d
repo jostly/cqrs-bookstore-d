@@ -1,39 +1,49 @@
 module cqrslib.domain;
-/*
-import std.conv, std.algorithm, std.traits;
 
-// If one wishes to use classes for value objects, inherit this
-// Probably deprecated, value objects should always be structs
-class ValueObject(alias T) {
+import cqrslib.base;
+import cqrslib.event;
+import cqrslib.command;
+import std.traits, std.conv;
+import vibe.d;
 
-	override string toString() {
-		T self = cast(T)this;
-		auto fields = self.tupleof;
-		string b = className!T ~ "(";
-		foreach(i, t; fields) {
-			if (i > 0) {
-				b ~= ", ";
-			}
-			b ~= to!string(t);
-		}
-		return b ~ ")";
+class AggregateRoot(ID : GenericId) {
+	alias Event = DomainEvent!ID;
+	
+protected:	
+	ID id;
+	int revision;
+	long timestamp;
+	
+	void tryPersistEvent(Object event) {
+		auto c = cast(Event)event;
+		if (c !is null) persistEvent(c);
+	}
+	
+	int nextRevision() { return revision + 1; }
+	long now() {
+		auto time = Clock.currTime();
+		return time.toUnixTime() * 1000 + time.fracSec.msecs;
 	}
 
-	override bool opEquals(Object o) {
-		T self = cast(T)this;
-		if (typeid(self) != typeid(o)) return false;
-		T other = cast(T)o;
-		auto thisFields = self.tupleof;
-		auto thatFields = other.tupleof;
-		if (thisFields.length != thatFields.length) return false;
-		foreach(i, t; thisFields) {
-			if (t != thatFields[i]) return false;
-		}
-		return true;
+private:
+	Event[] uncommittedEvents;	
+	
+	void persistEvent(Event event) {
+		uncommittedEvents ~= event;
 	}
 
 }
 
-// class name for a type, accessible at compile time
-private static auto className(T)() { return __traits(identifier, T); }
-*/
+void applyChange(T)(T self, Object event, bool isNew = true) {
+	foreach (m; __traits(getOverloads, T, "handleEvent")) {
+		static if (arity!m == 1) {
+			alias Base = ParameterTypeTuple!m[0];
+			enum typeInfo = typeid(Base);
+			if (typeInfo == event.classinfo) {
+				self.handleEvent(cast(Base)cast(void *)event);
+			}
+		}
+	}
+	if (isNew) self.tryPersistEvent(event);
+}
+

@@ -7,16 +7,20 @@ import bookstore.order.contract;
 class OrderPlacedEvent : DomainEvent!OrderId {
 
 	CustomerInformation customerInformation;
+	OrderLine[] orderLines;
+	immutable long orderAmount;
 
-	this(OrderId id, int revision, long timestamp, CustomerInformation customerInformation) {
+	this(OrderId id, int revision, long timestamp, CustomerInformation customerInformation, OrderLine[] orderLines, long orderAmount) {
 		super(id, revision, timestamp);
 		this.customerInformation = customerInformation;
+		this.orderLines = orderLines;
+		this.orderAmount = orderAmount;
 	}
 
 	// Adding more properties, we need to override but specify all properties we want to show
 	// So favour composition over inheritance to make this easier on everyone
 	override string toString() {
-		return classToString(this, aggregateId, revision, timestamp, customerInformation);
+		return classToString(this, aggregateId, revision, timestamp, customerInformation, orderLines, orderAmount);
 	}
 
 	Json toJson() {
@@ -25,6 +29,8 @@ class OrderPlacedEvent : DomainEvent!OrderId {
 		ret["version"] = revision;
 		ret["timestamp"] = timestamp;
 		ret["customerInformation"] = customerInformation.toJson();
+		ret["orderLines"] = serializeToJson(orderLines);
+		ret["orderAmount"] = orderAmount;
 		return ret;
 	}
 
@@ -33,6 +39,8 @@ class OrderPlacedEvent : DomainEvent!OrderId {
 		auto revision = json["version"].to!int;
 		auto timestamp = json["timestamp"].to!long;
 		auto customerInformation = CustomerInformation.fromJson(json["customerInformation"]);
-		return new OrderPlacedEvent(id, revision, timestamp, customerInformation);
+		auto orderLines = deserializeJson!(OrderLine[])(json["orderLines"]);
+		auto orderAmount = json["orderAmount"].to!long;
+		return new OrderPlacedEvent(id, revision, timestamp, customerInformation, orderLines, orderAmount);
 	}
 }

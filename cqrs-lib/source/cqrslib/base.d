@@ -1,6 +1,7 @@
 module cqrslib.base;
 
 import std.traits, std.conv;
+import vibe.data.json;
 
 class GenericId {
 	// Import scoped on class - anything inhering GenericId will have access to std.uuid
@@ -21,6 +22,12 @@ class GenericId {
 
 	this() {
 		this(randomUUID().toString());
+	}
+
+	Json toJson() {
+		Json ret = Json.emptyObject;
+		ret["id"] = id;
+		return ret;
 	}
 
 	override string toString() {

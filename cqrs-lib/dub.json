@@ -1,4 +1,7 @@
 {
 	"name": "cqrs-lib",
-	"targetType": "library"
+	"targetType": "library",
+	"dependencies": {
+		"vibe-d": ">=0.7.17"
+	}
 }

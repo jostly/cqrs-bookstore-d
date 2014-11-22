@@ -9,19 +9,29 @@ class OrderId : GenericId {
 		super(id);
 	}
 
-	static auto randomId() {
+	static OrderId randomId() {
 		return new OrderId(randomUUID().toString());
-	}
-
-	Json toJson() {
-		Json ret = Json.emptyObject;
-		ret["id"] = id;
-		return ret;
 	}
 
 	static OrderId fromJson(Json json) {
 		return new OrderId(json["id"].to!string);
 	}
+}
+
+class ProductId : GenericId {
+
+	this(string id) {
+		super(id);
+	}
+
+	static ProductId randomId() {
+		return new ProductId(randomUUID().toString());
+	}
+
+	static ProductId fromJson(Json json) {
+		return new ProductId(json["id"].to!string);
+	}
+
 }
 
 class CustomerInformation {
@@ -55,5 +65,40 @@ class CustomerInformation {
 			json["address"].to!string
 			);
 	}
+}
 
+class OrderLine {
+	ProductId productId;
+	immutable string title;
+	immutable int quantity;
+	immutable long unitPrice;
+
+	this(ProductId productId, string title, int quantity, long unitPrice) {
+		this.productId = productId;
+		this.title = title;
+		this.quantity = quantity;
+		this.unitPrice = unitPrice;
+	}
+
+	override string toString() {
+		return classToString(this, productId, title, quantity, unitPrice);
+	}
+
+	Json toJson() {
+		Json ret = Json.emptyObject;
+		ret["productId"] = productId.toJson();
+		ret["title"] = title;
+		ret["quantity"] = quantity;
+		ret["unitPrice"] = unitPrice;
+		return ret;
+	}
+
+	static OrderLine fromJson (Json json) {
+		return new OrderLine(
+			ProductId.fromJson(json["productId"]),
+			json["title"].to!string,
+			json["quantity"].to!int,
+			json["unitPrice"].to!long
+			);
+	}
 }

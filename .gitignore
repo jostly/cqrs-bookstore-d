@@ -1,2 +1,7 @@
 .dub
 dub.selections.json
+RemoteSystemsTempFiles
+.project
+.buildpath
+.metadata
+

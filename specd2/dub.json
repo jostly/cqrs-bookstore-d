@@ -1,0 +1,7 @@
+{
+	"name" : "specd2",
+	"description" : "specd2 -- with more awesomesauce.",
+	"dependencies" : {
+	},
+	"versions": ["specd_internal_specs"]
+}

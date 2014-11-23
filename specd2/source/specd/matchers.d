@@ -337,8 +337,6 @@ void equal(T, T1)(Match!T matcher, T1 expected)
 			text(match) ~ ">");
 }
 
-
-
 void sameAs(T, T1)(Match!T matcher, T1 expected)
 	if (is(typeof(expected == matcher.dummyMatch) == bool))
 {

@@ -11,9 +11,6 @@ interface OrderAPI {
 	@path("")
 	void placeOrder(string orderId, string customerName, string customerEmail, string customerAddress, CartDto cart);
 	
-	@path("v2")
-	void placeOrder2(Json _dummy);
-
 }
 
 struct CartDto {
@@ -32,9 +29,9 @@ struct LineItemDto {
 }
 
 class OrderResource : OrderAPI {
-	private SyncCommandBus commandBus;
+	private CommandBus commandBus;
 
-	this(SyncCommandBus commandBus) {
+	this(CommandBus commandBus) {
 		this.commandBus = commandBus;
 	}
 
@@ -53,12 +50,6 @@ class OrderResource : OrderAPI {
 		commandBus.dispatch(command);
 	}
 	
-	void placeOrder2(Json json) {
-		import std.conv;
-		logInfo("Received: "~text(json));
-	}
-		
-
 }
 
 

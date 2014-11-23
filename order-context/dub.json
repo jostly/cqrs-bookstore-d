@@ -6,5 +6,5 @@
 		"specd2": { "path": "../specd2/" }
 	},
 	"targetType": "executable",
-	"versions": ["VibeDefaultMain"]	
+	"versions": ["VibeDefaultMain", "specd_immediate"]	
 }

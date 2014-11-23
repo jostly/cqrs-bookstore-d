@@ -5,6 +5,8 @@ import bookstore.order.event;
 import cqrslib.domain;
 import cqrslib.base;
 import vibe.d;
+import specd.specd;
+import std.stdio;
 
 class Order : AggregateRoot!OrderId {
 
@@ -13,7 +15,7 @@ class Order : AggregateRoot!OrderId {
 		assertMoreThanZeroOrderLines(orderLines);
 		
 		// Need to preface with this so we get to the actual template function
-		this.applyChange(
+		applyChange(this,
 			new OrderPlacedEvent(orderId, nextRevision(), now(), customerInformation, orderLines, totalAmount)
 			);
 	}
@@ -37,5 +39,25 @@ private:
 	void assertMoreThanZeroOrderLines(OrderLine[] orderLines) {
 		assert(orderLines.length > 0, "Cannot place an order without any order lines");
 	}
+}
 
+unittest {
+	describe("Order")
+		.should("emit one event when placed", {
+				auto order = new Order();
+				auto orderId = OrderId.randomId(); 
+				auto productId = ProductId.randomId();
+				order.place(orderId, 
+					new CustomerInformation("a", "b", "c"), 
+					[ new OrderLine(productId, "title", 1, 2) ],
+					 3);
+				order.uncommittedEvents.length.must == 1;
+
+				auto event = order.uncommittedEvents[0];
+				event.revision.must == 1;
+				event.aggregateId.must == orderId;
+				event.classinfo.name.must == typeid(OrderPlacedEvent).name;
+			})
+		;
+	
 }

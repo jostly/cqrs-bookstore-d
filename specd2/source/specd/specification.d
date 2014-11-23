@@ -10,12 +10,10 @@ auto describe(string title) {
 
 version(specd_internal_specs) unittest {
 	int executionSequence = 0;
-	int executionFlag = 0;
-	bool executionRan = false;
-
+	int executionFlag = 0;	
 	describe("A SpecificationGroup with ordered parts").as(
-		(it) { it.should("execute each part", (executionSequence++).must.equal(0)); },
-		(it) { it.should("execute its parts in order", (executionSequence++).must.equal(1)); }
+		(it) { it.should("execute each part", so((executionSequence++).must.equal(0))); },
+		(it) { it.should("execute its parts in order", so((executionSequence++).must.equal(1))); }
 	);
 
 	describe("A SpecificationGroup with unordered parts").should([
@@ -30,10 +28,19 @@ version(specd_internal_specs) unittest {
 
 	assert(executionFlag == 3, "Did not execute all parts of the unordered SpecificationGroup");
 
+	bool executionRan1 = false;
+	bool executionRan2 = false;
+	
 	describe("A SpecificationGroup with a single part")
-		.should("execute the part", executionRan = true);
+		.should("accept the part on the form 'statement'", so(executionRan1 = true))
+		.should("accept the part on the form '{statement;}'", { executionRan2 = true; })
+		;
 
-	assert(executionRan, "Did not execute the single specification");
+	describe("A SpecificationGroup with a single part")
+		.should("have executed the part on the form 'statement'", so(executionRan1.must.be.True))
+		.should("have executed the part on the form '{statement;}'", so(executionRan2.must.be.True))
+		;		
+	
 }
 
 class Specification {
@@ -97,7 +104,7 @@ public:
 		}
 		return this;
 	}
-	auto should(string text, lazy void test) {
+	auto should(string text, void delegate() test) {
 		try {
 			test();
 			reportSuccess(text);
@@ -126,4 +133,12 @@ public:
 			throw e;
 		}
 	}
+}
+
+// This is to work around the fact that it's currently? impossible to have two overloaded functions
+// with the same name (should) and parameters lazy void / void delegate(). 
+void delegate() so(lazy void f) {
+	return delegate() {
+		f();
+	};
 }

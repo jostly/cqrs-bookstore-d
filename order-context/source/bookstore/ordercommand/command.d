@@ -26,6 +26,11 @@ class PlaceOrderCommand {
 }
 
 class OrderCommandHandler {
+	private Repository!(OrderId, Order) repository;
+	
+	this(Repository!(OrderId, Order) repository) {
+		this.repository = repository;
+	}
 
 	void register(SyncCommandBus commandBus) {
 		commandBus.register(&handlePlaceOrderCommand);
@@ -34,6 +39,7 @@ class OrderCommandHandler {
 	void handlePlaceOrderCommand(PlaceOrderCommand command) {
 		auto order = new Order;
 		order.place(command.orderId, command.customerInformation, command.orderLines, command.totalAmount);
+		repository.save(order);
 	}
 
 }

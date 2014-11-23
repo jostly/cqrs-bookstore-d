@@ -1,5 +1,6 @@
 module bookstore.order.contract;
 
+import std.uuid;
 import vibe.data.json;
 import cqrslib.base;
 
@@ -7,6 +8,12 @@ class OrderId : GenericId {
 
 	this(string id) {
 		super(id);
+	}
+	
+	Json toJson() {
+		Json ret = Json.emptyObject;
+		ret["id"] = id;
+		return ret;
 	}
 
 	static OrderId randomId() {
@@ -22,6 +29,12 @@ class ProductId : GenericId {
 
 	this(string id) {
 		super(id);
+	}
+
+	Json toJson() {
+		Json ret = Json.emptyObject;
+		ret["id"] = id;
+		return ret;
 	}
 
 	static ProductId randomId() {

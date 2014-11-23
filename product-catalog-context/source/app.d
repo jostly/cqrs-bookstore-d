@@ -7,12 +7,6 @@ import bookstore.products.resource;
 
 void accessFilter(HTTPServerRequest req, HTTPServerResponse res)
 {
-	/*
-	res.headers["allowedMethods"] = "GET,PUT,POST,DELETE,OPTIONS";
-	res.headers["allowedOrigins"] = "*";
-	res.headers["allowedHeaders"] = "Content-Type,Authorization,X-Requested-With,Content-Length,Accept,Origin";
-	res.headers["allowCredentials"] = "true";
-	*/
     res.headers["Access-Control-Allow-Origin"] = "*";
 }
 
@@ -29,7 +23,7 @@ shared static this()
 	auto settings = new HTTPServerSettings;
 	settings.port = 8090;
 	settings.bindAddresses = ["::1", "127.0.0.1"];
-	settings.accessLogToConsole = true;
+	//settings.accessLogToConsole = true; // Log all access to the console
 	listenHTTP(settings, router);
 
 	logInfo("product-catalog-context active on port " ~ text(settings.port));

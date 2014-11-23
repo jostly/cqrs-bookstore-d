@@ -1,12 +1,18 @@
 import std.conv, std.uuid, std.datetime, core.time;
 import vibe.d;
 import bookstore.ordercontext;
+import cqrslib.command;
 
 shared static this()
 {
 	auto commandBus = new SyncCommandBus();
+	
+	auto domainEventStore = new InMemoryDomainEventStore();
+	
+	auto orderRepository = new DefaultRepository!(OrderId, Order)(domainEventStore);
 
-	new OrderCommandHandler().register(commandBus);
+	auto orderCommandHandler = new OrderCommandHandler(orderRepository);
+	orderCommandHandler.register(commandBus);
 
 	auto api = new OrderResource(commandBus);
 

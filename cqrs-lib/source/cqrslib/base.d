@@ -1,16 +1,12 @@
 module cqrslib.base;
 
 import std.traits, std.conv;
-import vibe.data.json;
+import std.uuid; 
 
 class GenericId {
-	// Import scoped on class - anything inhering GenericId will have access to std.uuid
-	import std.uuid; 
-
 	immutable string id;
 
 	this(string id) {
-		// Import scoped on function, only accesible inside the function
 		import std.regex;
 
 		auto r = matchFirst(id, regex("^" ~ uuidRegex ~ "$"));
@@ -24,15 +20,33 @@ class GenericId {
 		this(randomUUID().toString());
 	}
 
-	Json toJson() {
-		Json ret = Json.emptyObject;
-		ret["id"] = id;
-		return ret;
-	}
-
 	override string toString() {
 		return classToString(this, id);
 	}
+	
+	override bool opEquals(Object o) {
+		auto that = cast(GenericId)o;
+		if (that !is null) {
+			return this.id == that.id;
+		} else {
+			return false;
+		}
+	}
+
+}
+
+unittest {
+	import specd.specd;
+	
+	auto id1 = new GenericId();
+	auto id2 = new GenericId();
+	auto id3 = new GenericId(id2.id);
+	
+	describe("GenericId")
+		.should("be equal if id values are equal", so(id2.must.equal(id3)))
+		.should("have commutative equality", so(id3.must.equal(id2)))
+		.should("not be equal if id values differ", so(id1.must.not.equal(id2)))
+		;	
 }
 
 private string stringOf(A)(A a) {

@@ -2,6 +2,6 @@
 	"name": "cqrs-lib",
 	"targetType": "library",
 	"dependencies": {
-		"vibe-d": ">=0.7.17"
+		"specd2": { "path": "../specd2/" }		
 	}
 }

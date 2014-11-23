@@ -1,37 +1,36 @@
 module cqrslib.command;
+import specd.specd;
+
+interface CommandBus {
+	
+	void dispatch(Object o);
+	void register(C)(void delegate (C) handler);
+	
+}
 
 // generalize to dynamic dispatch pipe
-class SyncCommandBus {
+class SyncCommandBus : CommandBus {
 
-	alias HANDLER = void delegate(void *);
+	alias Handler = void delegate(Object);
 
 	struct HandlerEntry {
 		TypeInfo commandType;
-		HANDLER handler;
+		Handler handler;
 	};
 
 	private HandlerEntry[] handlers;
 
-	void dynamicDispatch(Object o) {
+	void dispatch(Object o) {
 		TypeInfo ti = o.classinfo;
 		foreach (he; handlers) {
 			if (he.commandType == ti) {
-				he.handler(cast(void *)o);
+				he.handler(o);
 			}
 		}
 	}
 
-	void dispatch(C)(C command) {
-		foreach (he; handlers) {
-			if (he.commandType == typeid(C)) {
-				void delegate(C) handler = cast(void delegate(C))he.handler;
-				handler(command);
-			}
-		}
-	}
-
-	void register(C)(void delegate(C) handler) {
-		handlers ~= HandlerEntry(typeid(C), cast(HANDLER)handler);
+	void register(C : Object)(void delegate(C) handler) {
+		handlers ~= HandlerEntry(typeid(C), cast(Handler)handler);
 	}
 }
 
@@ -47,12 +46,12 @@ unittest {
 
 	auto commandBus = new SyncCommandBus;
 
-	void *calledCommand = null;
+	Object calledCommands[] = [];
 	auto command1 = new TestCommand1;
 	auto command2 = new TestCommand2;
 
 	void foo(TestCommand1 cmd) {
-		calledCommand = cast(void *)cmd;
+		calledCommands ~= cast(Object)cmd;
 	}
 
 	commandBus.register(&foo);
@@ -60,5 +59,7 @@ unittest {
 	commandBus.dispatch(command1);
 	commandBus.dispatch(command2);
 
-	assert(cast(void *)command1 == calledCommand);
+	describe("SyncCommandBus")
+		.should("dispatch message to proper handler", so(calledCommands.must.be.equal([cast(Object)command1])));
+
 }

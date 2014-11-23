@@ -26,3 +26,9 @@ public:
 		return classToString(this, aggregateId, revision, timestamp);
 	}
 }
+
+interface DomainEventStore {
+	Object[] loadEvents(GenericId id);
+	void save(GenericId id, Object[] events);
+	//Object[] getAllEvents();
+}

@@ -8,26 +8,21 @@ import bookstore.products.api;
 import bookstore.products.infrastructure;
 
 interface ProductAPI {
+	@path("/products")
 	ProductDto[] getProducts();
 
 	// Underscore in variable name ties _productId it to the path parameter :productId
-	@path("/product/:productId") 
+	@path("/products/:productId") 
 	Nullable!ProductDto getProduct(string _productId);
 
 	// Would be great if I could just accept a ProductDto here, but it doesn't
 	// seem possible. TODO: ask on forum
+	@path("/products")
 	void createProduct(string productId, BookDto book, long price, string publisherContractId);
 }
 
 class ProductAPIImpl : ProductAPI {
 	private ProductRepository repository = new InMemoryProductRepository();
-
-	this() {
-		/*
-		repository.save(Product("elven", Book("foo", "bar", "baz", "brr"), 12345, "nope"));
-		repository.save(Product("twelven", Book("a", "b", "c", "d"), 9999, "yep"));
-		*/
-	}
 
 	override ProductDto[] getProducts() { 
 		return repository.getProducts().map!(a => toDto(a)).array;

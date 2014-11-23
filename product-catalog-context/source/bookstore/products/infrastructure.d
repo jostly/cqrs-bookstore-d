@@ -1,7 +1,7 @@
 module bookstore.products.infrastructure;
 
 import bookstore.products.domain;
-import std.typecons;
+import std.typecons, std.stdio;
 
 class InMemoryProductRepository : ProductRepository {
 

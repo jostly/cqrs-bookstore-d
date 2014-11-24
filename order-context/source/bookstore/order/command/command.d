@@ -1,10 +1,10 @@
-module bookstore.ordercommand.command;
+module bookstore.order.command.command;
 
 import bookstore.order.contract;
-import bookstore.order.infrastructure;
-import bookstore.ordercommand.domain;
-import cqrslib.command;
+import bookstore.order.command.domain;
+import cqrslib.dispatcher;
 import cqrslib.base;
+import cqrslib.domain;
 
 class PlaceOrderCommand {
 	OrderId orderId;
@@ -22,18 +22,13 @@ class PlaceOrderCommand {
 	override string toString() {
 		return classToString(this, orderId, customerInformation, orderLines, totalAmount);
 	}
-
 }
 
 class OrderCommandHandler {
-	private Repository!(OrderId, Order) repository;
+	private Repository repository;
 	
-	this(Repository!(OrderId, Order) repository) {
+	this(Repository repository) {
 		this.repository = repository;
-	}
-
-	void register(SyncCommandBus commandBus) {
-		commandBus.register(&handlePlaceOrderCommand);
 	}
 
 	void handlePlaceOrderCommand(PlaceOrderCommand command) {
@@ -41,5 +36,4 @@ class OrderCommandHandler {
 		order.place(command.orderId, command.customerInformation, command.orderLines, command.totalAmount);
 		repository.save(order);
 	}
-
 }

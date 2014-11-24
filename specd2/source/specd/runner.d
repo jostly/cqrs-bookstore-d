@@ -50,7 +50,7 @@ version(unittest) {
 							log("Exception while processing unit tests in " ~ module_.name ~ ": " ~ text(ex));							
 						}
 					}
-					catch (AssertError ex) {
+					catch (Throwable ex) {
 						import std.conv;
 						success = false;
 						log("Exception while processing unit tests in " ~ module_.name ~ ": " ~ text(ex));

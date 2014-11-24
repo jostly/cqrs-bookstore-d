@@ -18,14 +18,14 @@ shared static this()
 	router.any("*", &accessFilter);
 	router.registerRestInterface(api);
 
-	auto routes = router.getAllRoutes();
-
 	auto settings = new HTTPServerSettings;
 	settings.port = 8090;
 	settings.bindAddresses = ["::1", "127.0.0.1"];
-	//settings.accessLogToConsole = true; // Log all access to the console
+	settings.accessLogToConsole = true; // Log all access to the console
 	listenHTTP(settings, router);
 
-	logInfo("product-catalog-context active on port " ~ text(settings.port));
+	auto routes = router.getAllRoutes();
+    logInfo("Available routes: "~text(routes));
 
+	logInfo("\n- product-catalog-context active on port " ~ text(settings.port) ~ " -\n");
 }

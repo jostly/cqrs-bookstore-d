@@ -14,23 +14,4 @@ class InMemoryDomainEventStore : DomainEventStore {
 	}
 }
 
-class DefaultRepository(ID : GenericId, AR : AggregateRoot!ID) : Repository!(ID, AR) {
-	private DomainEventStore domainEventStore;
-	
-	this(DomainEventStore store) {
-		this.domainEventStore = store;
-	}	
-	
-	void save(AR aggregateRoot) {
-		if (aggregateRoot.hasUncommittedEvents) {
-			domainEventStore.save(aggregateRoot.id, cast(Object[])aggregateRoot.uncommittedEvents);
-		}
-	}
-	
-	AR populate(ID id, AR aggregateRoot) {
-		return aggregateRoot;
-	}
-	
-	
-}
 

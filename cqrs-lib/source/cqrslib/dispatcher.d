@@ -1,19 +1,18 @@
-module cqrslib.command;
+module cqrslib.dispatcher;
+
 import specd.specd;
 
-interface CommandBus {
+interface Dispatcher {
 	
 	void dispatch(Object o);
-	void register(C)(void delegate (C) handler);
 	
 }
 
-// generalize to dynamic dispatch pipe
-class SyncCommandBus : CommandBus {
+class SynchronousDispatcher : Dispatcher {
 
-	alias Handler = void delegate(Object);
+	private alias Handler = void delegate(Object);
 
-	struct HandlerEntry {
+	private struct HandlerEntry {
 		TypeInfo commandType;
 		Handler handler;
 	};
@@ -44,7 +43,7 @@ unittest {
 
 	}
 
-	auto commandBus = new SyncCommandBus;
+	auto dispatcher = new SynchronousDispatcher;
 
 	Object calledCommands[] = [];
 	auto command1 = new TestCommand1;
@@ -54,12 +53,12 @@ unittest {
 		calledCommands ~= cast(Object)cmd;
 	}
 
-	commandBus.register(&foo);
+	dispatcher.register(&foo);
 
-	commandBus.dispatch(command1);
-	commandBus.dispatch(command2);
+	dispatcher.dispatch(command1);
+	dispatcher.dispatch(command2);
 
-	describe("SyncCommandBus")
+	describe("SynchronousDispatcher")
 		.should("dispatch message to proper handler", so(calledCommands.must.be.equal([cast(Object)command1])));
 
 }

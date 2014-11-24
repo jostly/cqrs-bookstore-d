@@ -2,6 +2,7 @@
 	"name": "cqrs-lib",
 	"targetType": "library",
 	"dependencies": {
-		"specd2": { "path": "../specd2/" }		
+		"specd2": { "path": "../specd2/" },
+		"dmocks-revived": "*"		
 	}
 }

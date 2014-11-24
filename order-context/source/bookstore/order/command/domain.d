@@ -1,4 +1,4 @@
-module bookstore.ordercommand.domain;
+module bookstore.order.command.domain;
 
 import bookstore.order.contract;
 import bookstore.order.event;
@@ -14,7 +14,6 @@ class Order : AggregateRoot!OrderId {
 		assertHasNotBeenPlaced();
 		assertMoreThanZeroOrderLines(orderLines);
 		
-		// Need to preface with this so we get to the actual template function
 		applyChange(this,
 			new OrderPlacedEvent(orderId, nextRevision(), now(), customerInformation, orderLines, totalAmount)
 			);

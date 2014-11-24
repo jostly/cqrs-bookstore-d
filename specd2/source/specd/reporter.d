@@ -16,13 +16,15 @@ interface Reporter {
 		int total = 0;
 		int failures = 0;
 		foreach(specGroup; SpecificationGroup.allSpecs) {
-			reportSpecificationGroup(specGroup);
-			foreach(spec; specGroup.specifications) {
-				++total;
-				if (!spec.isSuccess) {
-					++failures;
+			if (specGroup.specifications.length > 0) {
+				reportSpecificationGroup(specGroup);
+				foreach(spec; specGroup.specifications) {
+					++total;
+					if (!spec.isSuccess) {
+						++failures;
+					}
+					reportSpecification(spec);
 				}
-				reportSpecification(spec);
 			}
 		}
 		reportSummary(total, failures);

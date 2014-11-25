@@ -35,9 +35,9 @@ public:
 }
 
 interface DomainEventStore {
-	Object[] loadEvents(GenericId id);
-	void save(GenericId id, Object[] events);
-	Object[] getAllEvents();
+	DomainEvent[] loadEvents(GenericId id);
+	void save(GenericId id, DomainEvent[] events);
+	DomainEvent[] getAllEvents();
 }
 
 interface DomainEventListener {

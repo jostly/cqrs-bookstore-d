@@ -6,17 +6,17 @@ public import cqrslib.base;
 public import cqrslib.bus;
 
 class InMemoryDomainEventStore : DomainEventStore {
-	Object[] domainEvents;
+	DomainEvent[] domainEvents;
 	
-	Object[] loadEvents(GenericId id) {
+	DomainEvent[] loadEvents(GenericId id) {
 		return [];
 	}
 	
-	void save(GenericId id, Object[] events) {
+	void save(GenericId id, DomainEvent[] events) {
 		domainEvents ~= events;
 	}
 	
-	Object[] getAllEvents() {
+	DomainEvent[] getAllEvents() {
 		return domainEvents;
 	}
 }

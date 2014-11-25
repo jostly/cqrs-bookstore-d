@@ -69,7 +69,7 @@ class Repository {
 	
 	void save(ID : GenericId)(AggregateRoot!ID aggregateRoot) {
 		if (aggregateRoot.hasUncommittedEvents) {
-			domainEventStore.save(aggregateRoot.id, cast(Object[])aggregateRoot.uncommittedEvents);
+			domainEventStore.save(aggregateRoot.id, aggregateRoot.uncommittedEvents);
 			dispatcher.publish(aggregateRoot.uncommittedEvents);
 			aggregateRoot.markChangesAsCommitted();
 		}

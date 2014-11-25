@@ -3,12 +3,15 @@ module bookstore.order.query.resource;
 public import bookstore.order.query.service;
 public import bookstore.order.query.orderlist;
 public import cqrslib.event;
-import vibe.web.rest;
+import vibe.d;
 
 interface QueryAPI {
 	
 	@path("orders")
 	OrderProjection[] getOrders();
+	
+	@path("events")
+	Json getAllEvents();
 }
 
 class QueryResource : QueryAPI {
@@ -24,4 +27,19 @@ class QueryResource : QueryAPI {
 	override OrderProjection[] getOrders() {
 		return queryService.getOrders();
 	}
+	
+	override Json getAllEvents() {
+		import bookstore.order.event : JsonSerializable;
+		
+		auto allEvents = domainEventStore.getAllEvents();
+		Json result = Json.emptyArray;
+		foreach (event; allEvents) {
+			Json row = Json.emptyArray;
+			row ~= Json(event.classinfo.name);
+			row ~= (cast(JsonSerializable)event).toJson();
+			result ~= row;  
+		}
+		return result;
+	}
+
 }

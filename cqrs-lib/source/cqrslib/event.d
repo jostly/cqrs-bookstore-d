@@ -2,7 +2,13 @@ module cqrslib.event;
 
 import cqrslib.base;
 
-class DomainEvent(T : GenericId) {
+abstract class DomainEvent {
+	@property GenericId id();
+	@property int revision();
+	@property long timestamp();
+}
+
+abstract class AbstractDomainEvent(T : GenericId) : DomainEvent {
 
 private:
 	T aggregateId_;	
@@ -11,8 +17,9 @@ private:
 
 public:
 	@property T aggregateId() { return aggregateId_; }
-	@property int revision() { return revision_; }
-	@property long timestamp() { return timestamp_; }
+	override @property GenericId id() { return aggregateId_; }
+	override @property int revision() { return revision_; }
+	override @property long timestamp() { return timestamp_; }
 
 	this(T aggregateId, int revision, long timestamp) {
 		this.aggregateId_ = aggregateId;
@@ -30,5 +37,14 @@ public:
 interface DomainEventStore {
 	Object[] loadEvents(GenericId id);
 	void save(GenericId id, Object[] events);
-	//Object[] getAllEvents();
+	Object[] getAllEvents();
+}
+
+interface DomainEventListener {
+	bool supportsReplay();
+}
+
+interface DomainEventBus {
+	void publish(DomainEvent[] events);
+	void republish(DomainEvent[] events);
 }

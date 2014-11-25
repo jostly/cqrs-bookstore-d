@@ -2,6 +2,7 @@ import std.conv, std.uuid, std.datetime, core.time;
 import vibe.d;
 import bookstore.ordercontext;
 import cqrslib.dispatcher;
+import cqrslib.bus;
 
 void accessFilter(HTTPServerRequest req, HTTPServerResponse res)
 {
@@ -10,19 +11,20 @@ void accessFilter(HTTPServerRequest req, HTTPServerResponse res)
 
 shared static this()
 {
-	auto commandBus = new SynchronousDispatcher();
-	auto eventBus = new SynchronousDispatcher();
+	auto commandBus = new SynchronousBus();
+	auto eventBus = new SynchronousDomainEventBus();
 	
 	auto domainEventStore = new InMemoryDomainEventStore();
 	
 	auto aggregateRepository = new Repository(domainEventStore, eventBus);
 
 	auto orderCommandHandler = new OrderCommandHandler(aggregateRepository);
-	commandBus.register(&orderCommandHandler.handlePlaceOrderCommand);
+	commandBus.registerHandler(orderCommandHandler);
 
 	auto orderProjectionRepository = new InMemoryOrderProjectionRepository();
 
 	auto orderListDenormalizer = new OrderListDenormalizer(orderProjectionRepository);
+	eventBus.register(orderListDenormalizer);
 
 	auto queryService = new QueryService(orderListDenormalizer);
 

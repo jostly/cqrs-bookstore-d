@@ -3,13 +3,13 @@ module cqrslib.domain;
 import cqrslib.base;
 import cqrslib.event;
 import cqrslib.dispatcher;
+import cqrslib.bus;
 import std.traits, std.conv;
 
 
 class AggregateRoot(ID : GenericId) {
-	alias Event = DomainEvent!ID;
 	
-	@property Event[] uncommittedEvents() { return uncommittedEvents_; }
+	@property DomainEvent[] uncommittedEvents() { return cast(DomainEvent[])uncommittedEvents_; }
 	@property bool hasUncommittedEvents() { return uncommittedEvents_.length > 0; }
 		
 	ID id;
@@ -21,11 +21,6 @@ class AggregateRoot(ID : GenericId) {
 	}
 	
 protected:
-	void tryPersistEvent(Object event) {
-		auto c = cast(Event)event;
-		if (c !is null) persistEvent(c);
-	}
-	
 	int nextRevision() { return revision + 1; }
 	long now() {
 		import std.datetime;
@@ -33,9 +28,7 @@ protected:
 		return time.toUnixTime() * 1000 + time.fracSec.msecs;
 	}
 	
-	void applyChange(T)(T self, Object eventObject, bool isNew = true) {
-		auto event = cast(Event)eventObject;
-		if (event is null) return; // Silently ignore events we are not supposed to handle
+	void applyChange(T)(T self, DomainEvent event, bool isNew = true) {
 		
 		static if (__traits(hasMember, T, "handleEvent")) {
 			foreach (m; __traits(getOverloads, T, "handleEvent")) {
@@ -53,34 +46,31 @@ protected:
 	
 	void loadFromHistory(T)(T self, Object[] history) {
 		foreach (event; history) {
-			applyChange(self, event, false);
+			applyChange(self, cast(DomainEvent)event, false);
 		}
 	}
 	
 private:
-	Event[] uncommittedEvents_;	
+	DomainEvent[] uncommittedEvents_;	
 	
-	void persistEvent(Event event) {
+	void persistEvent(DomainEvent event) {
 		uncommittedEvents_ ~= event;
 	}
 }
 
 class Repository {
 	private DomainEventStore domainEventStore;
-	private Dispatcher dispatcher;
+	private DomainEventBus dispatcher;
 	
-	this(DomainEventStore store, Dispatcher dispatcher) {
+	this(DomainEventStore store, DomainEventBus dispatcher) {
 		this.domainEventStore = store;
 		this.dispatcher = dispatcher;
 	}	
 	
 	void save(ID : GenericId)(AggregateRoot!ID aggregateRoot) {
 		if (aggregateRoot.hasUncommittedEvents) {
-			auto events = cast(Object[])aggregateRoot.uncommittedEvents;
-			domainEventStore.save(aggregateRoot.id, events);
-			foreach (event; events) {
-				dispatcher.dispatch(event);
-			}
+			domainEventStore.save(aggregateRoot.id, cast(Object[])aggregateRoot.uncommittedEvents);
+			dispatcher.publish(aggregateRoot.uncommittedEvents);
 			aggregateRoot.markChangesAsCommitted();
 		}
 	}
@@ -95,13 +85,23 @@ class Repository {
 unittest {
 	import specd.specd;
 	import dmocks.mocks;
+	
+	class MyId : GenericId {
+		
+	}
+	
+	class MyDE : AbstractDomainEvent!MyId {
+		this(MyId id, int rev, long t) {
+			super(id, rev, t);
+		}
+	}
 
 	describe("Repository.save")
 		.should("save uncommitted events to domain event store, send events to dispatcher, commit change", {
-				GenericId id = new GenericId();
+				MyId id = new MyId();
 				
-				auto event1 = new DomainEvent!GenericId(id, 1, 1);
-				auto event2 = new DomainEvent!GenericId(id, 2, 2);
+				auto event1 = new MyDE(id, 1, 1);
+				auto event2 = new MyDE(id, 2, 2);
 				
 				AggregateRoot!GenericId aggregateRoot = new AggregateRoot!GenericId();
 				aggregateRoot.id = id;
@@ -112,9 +112,8 @@ unittest {
 				DomainEventStore domainEventStore = mocker.mock!(DomainEventStore);				
 				mocker.expect(domainEventStore.save(id, cast(Object[])[event1, event2]));
 				
-				Dispatcher dispatcher = mocker.mock!(Dispatcher); 
-				mocker.expect(dispatcher.dispatch(event1));
-				mocker.expect(dispatcher.dispatch(event2));
+				DomainEventBus dispatcher = mocker.mock!(DomainEventBus);
+				mocker.expect(dispatcher.publish(cast(DomainEvent[])[event1, event2])); 
 				
 				mocker.replay();
 				
@@ -128,15 +127,15 @@ unittest {
 		
 	describe("Repository.load")
 		.should("populate aggregate from domain event store", {
-				GenericId id = new GenericId();
+				MyId id = new MyId();
 				
-				auto event1 = new DomainEvent!GenericId(id, 1, 1);
-				auto event2 = new DomainEvent!GenericId(id, 2, 2);
+				auto event1 = new MyDE(id, 1, 1);
+				auto event2 = new MyDE(id, 2, 2);
 				
 				static class MyAR : AggregateRoot!GenericId {
-					DomainEvent!GenericId[] eventsReceived;
+					MyDE[] eventsReceived;
 					
-					void handleEvent(DomainEvent!GenericId event) {
+					void handleEvent(MyDE event) {
 						eventsReceived ~= event;
 					}
 				}
@@ -145,7 +144,7 @@ unittest {
 				DomainEventStore domainEventStore = mocker.mock!(DomainEventStore);				
 				mocker.expect(domainEventStore.loadEvents(id)).returns(cast(Object[])[event1, event2]);
 				
-				Dispatcher dispatcher = mocker.mock!(Dispatcher); 
+				DomainEventBus dispatcher = mocker.mock!(DomainEventBus); 
 				
 				mocker.replay();
 				

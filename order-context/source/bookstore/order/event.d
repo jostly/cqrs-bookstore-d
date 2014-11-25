@@ -4,7 +4,7 @@ import vibe.data.json;
 import cqrslib.event, cqrslib.base;
 import bookstore.order.contract;
 
-class OrderPlacedEvent : DomainEvent!OrderId {
+class OrderPlacedEvent : AbstractDomainEvent!OrderId, JsonSerializable {
 
 	CustomerInformation customerInformation;
 	OrderLine[] orderLines;

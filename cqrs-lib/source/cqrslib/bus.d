@@ -38,16 +38,9 @@ protected:
 	}
 }
 
-void register(T)(Bus bus, T handler) 
-{
-	auto entries = findAllUnaryMethods(handler);
-	assertNoOverloadedSubscribes(entries);
-	foreach(entry; entries) 
-	{
-		if (entry.isSubscription()) bus.registerEventHandler(entry.object, entry.messageType, entry.handler);
-	}
-}
-
+/**
+ * Simple synchronous bus implementation, calls the delegate on the same thread
+ */
 class SynchronousBus : Bus 
 {
 	override void doDispatch(Object message, EventHandler eventHandler) 
@@ -56,8 +49,34 @@ class SynchronousBus : Bus
 	}
 }
 
+class AsynchronousBus : Bus
+{
+	override void doDispatch(Object message, EventHandler eventHandler) 
+	{
+		throw new Exception("Not implemented yet");
+	}	
+}
+
+// Keeping this outside the Bus class means that the class won't get expanded with all instantiated templates
+// which could be a problem if it is used with a lot of different messages
+void registerHandler(T)(Bus bus, T handler) 
+{
+	// 1. At compile time, gather information about the type T, and create method delegates
+	auto entries = findAllUnaryMethods(handler);
+	// 2. At runtime, check for wrong use (subscribe on overloads)
+	assertNoOverloadedSubscribes(entries);
+	// 3, At runtime, register, with the Bus, those methods that were found in 1 and were actually annotated with @subscribe 
+	foreach(entry; entries) 
+	{
+		if (entry.isSubscription()) bus.registerEventHandler(entry.object, entry.messageType, entry.handler);
+	}
+}
 
 private:
+/*
+This is the part which does compile-time reflection and collects information on all unary methods on the handler type,
+storing it in an array for runtime use when registering handlers
+*/
 alias Handler = void delegate(Object);
 
 struct HandlerEntry {
@@ -67,7 +86,15 @@ struct HandlerEntry {
 	Handler handler;
 	string[] attributes;
 	bool isSubscription() {
-		return attributes.contains(subscribe);
+		bool contains(string[] arr, string value) 
+		{
+			foreach(a; arr) {
+				if (a == value) return true;
+			}
+			return false;
+		}
+
+		return contains(attributes, subscribe);
 	}
 };
 
@@ -78,11 +105,11 @@ HandlerEntry[] findAllUnaryMethods(T)(T obj)
 	
 	foreach (memberName; __traits(allMembers, T))
 	{
-		static if (__traits(hasMember, T, memberName))
+		static if (__traits(hasMember, T, memberName) && __traits(compiles, __traits(getOverloads, T, memberName)))
 		{
 			foreach (overload; __traits(getOverloads, T, memberName))
 			{
-				static if (isSomeFunction!overload && arity!overload == 1 && is(ReturnType!overload == void))
+				static if (isSomeFunction!overload && arity!overload == 1 && is(ReturnType!overload == void) && (__traits(getProtection, overload) == "public"))
 				{
 					enum methodName = __traits(identifier, overload);
 							
@@ -98,11 +125,10 @@ HandlerEntry[] findAllUnaryMethods(T)(T obj)
 		
 	}
 	
-	return entries;
-	
+	return entries;	
 }
 
-private void assertNoOverloadedSubscribes(HandlerEntry[] entries) {
+void assertNoOverloadedSubscribes(HandlerEntry[] entries) {
 	int[string] counts;
 	foreach(e; entries) {
 		counts[e.methodName]++;
@@ -114,42 +140,3 @@ private void assertNoOverloadedSubscribes(HandlerEntry[] entries) {
 	}
 }
 
-private bool contains(string[] arr, string value) 
-{
-	foreach(a; arr) {
-		if (a == value) return true;
-	}
-	return false;
-}
-
-unittest {
-	import std.stdio, std.conv;
-	
-	class Bar {
-	}
-	
-	class Baz {
-	}	
-
-	class FooHandler {
-		private int t;
-		this(int a) {
-			t = a;
-		}
-		
-		@subscribe void subscribedMethod(Baz a) {
-			writeln("Called with Baz ", a, " having t of ", t);
-		}
-		
-		@subscribe void subscribedMethod2(Bar bar) {
-			writeln("Called with Bar ", bar, " having t of ", t);
-		}		
-	}
-	
-	Bus bus = new SynchronousBus();
-	bus.register(new FooHandler(17));
-	
-	bus.dispatch(new Bar());
-	bus.dispatch(new Baz());
-
-}

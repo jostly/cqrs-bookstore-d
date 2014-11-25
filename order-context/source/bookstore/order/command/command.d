@@ -2,7 +2,7 @@ module bookstore.order.command.command;
 
 import bookstore.order.contract;
 import bookstore.order.command.domain;
-import cqrslib.dispatcher;
+import cqrslib.bus;
 import cqrslib.base;
 import cqrslib.domain;
 
@@ -31,7 +31,7 @@ class OrderCommandHandler {
 		this.repository = repository;
 	}
 
-	void handlePlaceOrderCommand(PlaceOrderCommand command) {
+	@subscribe void handlePlaceOrderCommand(PlaceOrderCommand command) {
 		auto order = new Order;
 		order.place(command.orderId, command.customerInformation, command.orderLines, command.totalAmount);
 		repository.save(order);

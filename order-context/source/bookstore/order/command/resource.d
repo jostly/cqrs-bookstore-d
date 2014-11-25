@@ -3,7 +3,7 @@ module bookstore.order.command.resource;
 import bookstore.order.command.command;
 import bookstore.order.contract;
 import bookstore.order.infrastructure;
-import cqrslib.dispatcher;
+import cqrslib.bus;
 import vibe.d;
 
 interface OrderAPI {
@@ -29,9 +29,9 @@ struct LineItemDto {
 }
 
 class OrderResource : OrderAPI {
-	private Dispatcher commandBus;
+	private Bus commandBus;
 
-	this(Dispatcher commandBus) {
+	this(Bus commandBus) {
 		this.commandBus = commandBus;
 	}
 

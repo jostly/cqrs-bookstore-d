@@ -4,7 +4,13 @@ import std.uuid;
 import vibe.data.json;
 import cqrslib.base;
 
-class OrderId : GenericId {
+// Marker class for custom, runtime Json serialization
+// TODO: Should the later classes (CustomerInformation etc) really be json-serializable here?
+interface JsonSerializable {
+	Json toJson();
+}
+
+class OrderId : GenericId, JsonSerializable {
 
 	this(string id) {
 		super(id);
@@ -25,7 +31,7 @@ class OrderId : GenericId {
 	}
 }
 
-class ProductId : GenericId {
+class ProductId : GenericId, JsonSerializable {
 
 	this(string id) {
 		super(id);
@@ -47,7 +53,7 @@ class ProductId : GenericId {
 
 }
 
-class CustomerInformation {
+class CustomerInformation : JsonSerializable {
 
 	immutable string customerName;
 	immutable string email;
@@ -80,7 +86,7 @@ class CustomerInformation {
 	}
 }
 
-class OrderLine {
+class OrderLine : JsonSerializable {
 	ProductId productId;
 	immutable string title;
 	immutable int quantity;
@@ -115,3 +121,5 @@ class OrderLine {
 			);
 	}
 }
+
+enum OrderStatus { ACTIVATED = "ACTIVATED", PLACED = "PLACED" }

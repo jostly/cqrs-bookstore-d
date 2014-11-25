@@ -23,7 +23,7 @@ class Order : AggregateRoot!OrderId {
 	    this.id = event.aggregateId;
 	    this.revision = event.revision;
 	    this.timestamp = event.timestamp;
-	    logInfo(this.toString());
+	    logInfo("Order is now: " ~ this.toString());
 	}
 
 	override string toString() {
@@ -54,7 +54,7 @@ unittest {
 
 				auto event = order.uncommittedEvents[0];
 				event.revision.must == 1;
-				event.aggregateId.must == orderId;
+				event.id.must == orderId;
 				event.classinfo.name.must == typeid(OrderPlacedEvent).name;
 			})
 		;

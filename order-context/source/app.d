@@ -40,6 +40,7 @@ shared static this()
 	auto router = new URLRouter;
 	router.any("*", &accessFilter);
 	router.match(HTTPMethod.OPTIONS, "*", &sendOptions);
+	router.get("*", serveStaticFiles("assets/"));
 	
 	router.registerRestInterface(new QueryResource(queryService, domainEventStore), "/service/query");
 	router.registerRestInterface(new OrderResource(commandBus), "/service/order-requests");

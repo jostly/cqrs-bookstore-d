@@ -2,6 +2,7 @@ module cqrslib.base;
 
 import std.traits, std.conv;
 import std.uuid; 
+import vibe.data.json;
 
 class GenericId {
 	immutable string id;
@@ -31,6 +32,12 @@ class GenericId {
 		} else {
 			return false;
 		}
+	}
+	
+	Json toJson() {
+		auto json = Json.emptyObject;
+		json["id"] = id;
+		return json;
 	}
 
 }

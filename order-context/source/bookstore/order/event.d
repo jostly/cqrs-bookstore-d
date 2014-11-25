@@ -4,7 +4,7 @@ import vibe.data.json;
 import cqrslib.event, cqrslib.base;
 import bookstore.order.contract;
 
-class OrderPlacedEvent : AbstractDomainEvent!OrderId, JsonSerializable {
+class OrderPlacedEvent : AbstractDomainEvent!OrderId {
 
 	CustomerInformation customerInformation;
 	OrderLine[] orderLines;
@@ -23,15 +23,12 @@ class OrderPlacedEvent : AbstractDomainEvent!OrderId, JsonSerializable {
 		return classToString(this, aggregateId, revision, timestamp, customerInformation, orderLines, orderAmount);
 	}
 
-	Json toJson() {
-		Json ret = Json.emptyObject;
-		ret["aggregateId"] = aggregateId.toJson();
-		ret["version"] = revision;
-		ret["timestamp"] = timestamp;
-		ret["customerInformation"] = customerInformation.toJson();
-		ret["orderLines"] = serializeToJson(orderLines);
-		ret["orderAmount"] = orderAmount;
-		return ret;
+	override Json toJson() {
+		auto json = super.toJson();
+		json["customerInformation"] = customerInformation.toJson();
+		json["orderLines"] = serializeToJson(orderLines);
+		json["orderAmount"] = orderAmount;
+		return json;
 	}
 
 	static OrderPlacedEvent fromJson(Json json) {
@@ -42,5 +39,11 @@ class OrderPlacedEvent : AbstractDomainEvent!OrderId, JsonSerializable {
 		auto orderLines = deserializeJson!(OrderLine[])(json["orderLines"]);
 		auto orderAmount = json["orderAmount"].to!long;
 		return new OrderPlacedEvent(id, revision, timestamp, customerInformation, orderLines, orderAmount);
+	}
+}
+
+class OrderActivatedEvent : AbstractDomainEvent!OrderId {
+	this(OrderId id, int revision, long timestamp) {
+		super(id, revision, timestamp);
 	}
 }

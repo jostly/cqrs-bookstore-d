@@ -1,11 +1,13 @@
 module cqrslib.event;
 
 import cqrslib.base;
+import vibe.data.json;
 
 abstract class DomainEvent {
 	@property GenericId id();
 	@property int revision();
 	@property long timestamp();
+	Json toJson();	
 }
 
 abstract class AbstractDomainEvent(T : GenericId) : DomainEvent {
@@ -31,6 +33,14 @@ public:
 
 	override string toString() {
 		return classToString(this, aggregateId, revision, timestamp);
+	}
+	
+	override Json toJson() {
+		auto json = Json.emptyObject;
+		json["aggregateId"] = aggregateId.toJson();
+		json["version"] = revision;
+		json["timestamp"] = timestamp;
+		return json;
 	}
 }
 

@@ -2,6 +2,7 @@
 	"name": "cqrs-lib",
 	"targetType": "library",
 	"dependencies": {
+		"vibe-d": ">=0.7.21",
 		"specd2": { "path": "../specd2/" },
 		"dmocks-revived": "*"		
 	}

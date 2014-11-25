@@ -28,15 +28,13 @@ class QueryResource : QueryAPI {
 		return queryService.getOrders();
 	}
 	
-	override Json getAllEvents() {
-		import bookstore.order.event : JsonSerializable;
-		
+	override Json getAllEvents() {		
 		auto allEvents = domainEventStore.getAllEvents();
 		Json result = Json.emptyArray;
 		foreach (event; allEvents) {
 			Json row = Json.emptyArray;
 			row ~= Json(event.classinfo.name);
-			row ~= (cast(JsonSerializable)event).toJson();
+			row ~= event.toJson();
 			result ~= row;  
 		}
 		return result;

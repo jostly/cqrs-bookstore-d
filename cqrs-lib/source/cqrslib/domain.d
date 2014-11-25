@@ -44,9 +44,9 @@ protected:
 		if (isNew) persistEvent(event);
 	}
 	
-	void loadFromHistory(T)(T self, Object[] history) {
+	void loadFromHistory(T)(T self, DomainEvent[] history) {
 		foreach (event; history) {
-			applyChange(self, cast(DomainEvent)event, false);
+			applyChange(self, event, false);
 		}
 	}
 	
@@ -110,7 +110,7 @@ unittest {
 
 				Mocker mocker = new Mocker();
 				DomainEventStore domainEventStore = mocker.mock!(DomainEventStore);				
-				mocker.expect(domainEventStore.save(id, cast(Object[])[event1, event2]));
+				mocker.expect(domainEventStore.save(id, cast(DomainEvent[])[event1, event2]));
 				
 				DomainEventBus dispatcher = mocker.mock!(DomainEventBus);
 				mocker.expect(dispatcher.publish(cast(DomainEvent[])[event1, event2])); 
@@ -132,7 +132,7 @@ unittest {
 				auto event1 = new MyDE(id, 1, 1);
 				auto event2 = new MyDE(id, 2, 2);
 				
-				static class MyAR : AggregateRoot!GenericId {
+				static class MyAR : AggregateRoot!MyId {
 					MyDE[] eventsReceived;
 					
 					void handleEvent(MyDE event) {
@@ -142,13 +142,13 @@ unittest {
 				
 				Mocker mocker = new Mocker();
 				DomainEventStore domainEventStore = mocker.mock!(DomainEventStore);				
-				mocker.expect(domainEventStore.loadEvents(id)).returns(cast(Object[])[event1, event2]);
+				mocker.expect(domainEventStore.loadEvents(id)).returns(cast(DomainEvent[])[event1, event2]);
 				
 				DomainEventBus dispatcher = mocker.mock!(DomainEventBus); 
 				
 				mocker.replay();
 				
-				auto aggregateRoot = new Repository(domainEventStore, dispatcher).load!(MyAR, GenericId)(id);
+				auto aggregateRoot = new Repository(domainEventStore, dispatcher).load!(MyAR, MyId)(id);
 				
 				mocker.verify();
 				

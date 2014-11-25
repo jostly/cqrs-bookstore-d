@@ -1,7 +1,7 @@
 module bookstore.order.query.orderlist;
 
 public import bookstore.order.contract;
-import bookstore.order.event : OrderPlacedEvent;
+import bookstore.order.event;
 import cqrslib.bus : subscribe;
 import cqrslib.event : DomainEventListener;
 
@@ -50,6 +50,12 @@ class OrderListDenormalizer : DomainEventListener {
 	@subscribe void handleOrderPlacedEvent(OrderPlacedEvent event) {
 		repository.save(OrderProjection(event.aggregateId, event.timestamp, event.orderAmount, event.customerInformation.customerName,
 				lineProjection(event.orderLines), OrderStatus.PLACED));
+	}
+	
+	@subscribe void handleOrderActivatedEvent(OrderActivatedEvent event) {
+		OrderProjection projection = repository.getById(event.aggregateId);
+		projection.status = OrderStatus.ACTIVATED;
+		repository.save(projection);
 	}	
 	
 	OrderProjection[] getOrders() {
@@ -57,4 +63,20 @@ class OrderListDenormalizer : DomainEventListener {
 	}
 	
 	bool supportsReplay() { return true; }
+}
+
+unittest {
+	import specd.specd;
+	import dmocks.mocks;
+	/* TODO
+	describe("OrderListDenormalizer")
+		.should("store order projection on order placed", {
+			Mocker mocker = new Mocker();
+			OrderProjectionRepository repository = mocker.mock!(OrderProjectionRepository);
+							
+			mocker.expect(repository.save();
+				
+			})
+		;
+	*/
 }

@@ -11,6 +11,9 @@ interface OrderAPI {
 	@path("")
 	void placeOrder(string orderId, string customerName, string customerEmail, string customerAddress, CartDto cart);
 	
+	@path("activations")
+	void activateOrder(string orderId);
+	
 }
 
 struct CartDto {
@@ -47,6 +50,12 @@ class OrderResource : OrderAPI {
 			cart.totalPrice
 			);
 
+		commandBus.dispatch(command);
+	}
+	
+	void activateOrder(string orderId) 
+	{
+		auto command = new ActivateOrderCommand(new OrderId(orderId));
 		commandBus.dispatch(command);
 	}
 	

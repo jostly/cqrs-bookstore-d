@@ -104,4 +104,8 @@ class OrderLine {
 	}
 }
 
-enum OrderStatus { ACTIVATED = "ACTIVATED", PLACED = "PLACED" }
+enum OrderStatus 
+{ 
+	NEW = "NEW", ACTIVATED = "ACTIVATED", PLACED = "PLACED" 
+}
+

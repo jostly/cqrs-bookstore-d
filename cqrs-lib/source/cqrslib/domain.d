@@ -28,6 +28,7 @@ protected:
 		return time.toUnixTime() * 1000 + time.fracSec.msecs;
 	}
 	
+	// TODO use a Dispatcher or Bus, no need to do the exact same thing three times. :) 
 	void applyChange(T)(T self, DomainEvent event, bool isNew = true) {
 		
 		static if (__traits(hasMember, T, "handleEvent")) {

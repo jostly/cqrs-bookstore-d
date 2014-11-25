@@ -9,7 +9,16 @@ class InMemoryDomainEventStore : DomainEventStore {
 	DomainEvent[] domainEvents;
 	
 	DomainEvent[] loadEvents(GenericId id) {
-		return [];
+		DomainEvent[] result;
+		foreach (event; domainEvents)
+		{
+			if (event.id == id)
+			{
+				result ~= event;
+			}
+		}
+		if (result.length == 0) throw new Exception("There is no aggregate with id " ~ id.toString());
+		return result;
 	}
 	
 	void save(GenericId id, DomainEvent[] events) {

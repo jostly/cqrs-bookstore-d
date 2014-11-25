@@ -3,7 +3,8 @@
 	"dependencies": {
 		"cqrs-lib": { "path": "../cqrs-lib/" },
 		"vibe-d": ">=0.7.21",
-		"specd2": { "path": "../specd2/" }
+		"specd2": { "path": "../specd2/" },
+		"dmocks-revived": "*"				
 	},
 	"targetType": "executable",
 	"versions": ["VibeDefaultMain", "specd_immediate"]	

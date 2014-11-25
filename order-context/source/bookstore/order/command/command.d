@@ -24,6 +24,21 @@ class PlaceOrderCommand {
 	}
 }
 
+class ActivateOrderCommand
+{
+	OrderId orderId;
+	
+	this(OrderId orderId)
+	{
+		this.orderId = orderId;
+	}
+	
+	override string toString()
+	{
+		return classToString(this, orderId);
+	}
+}
+
 class OrderCommandHandler {
 	private Repository repository;
 	
@@ -34,6 +49,13 @@ class OrderCommandHandler {
 	@subscribe void handlePlaceOrderCommand(PlaceOrderCommand command) {
 		auto order = new Order;
 		order.place(command.orderId, command.customerInformation, command.orderLines, command.totalAmount);
+		repository.save(order);
+	}
+	
+	@subscribe void handleActivate(ActivateOrderCommand command)
+	{
+		auto order = repository.load!(Order, OrderId)(command.orderId);
+		order.activate();
 		repository.save(order);
 	}
 }

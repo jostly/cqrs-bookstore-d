@@ -37,7 +37,7 @@ public:
 	
 	override Json toJson() {
 		auto json = Json.emptyObject;
-		json["aggregateId"] = aggregateId.toJson();
+		json["aggregateId"] = serializeToJson(aggregateId);
 		json["version"] = revision;
 		json["timestamp"] = timestamp;
 		return json;

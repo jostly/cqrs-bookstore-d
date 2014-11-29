@@ -12,14 +12,24 @@ class PlaceOrderCommand {
 	OrderLine[] orderLines;
 	long totalAmount;
 
-	this(OrderId orderId, CustomerInformation customerInformation, OrderLine[] orderLines, long totalAmount) {
+	this(OrderId orderId, CustomerInformation customerInformation, OrderLine[] orderLines, long totalAmount) pure 
+	{
 		this.orderId = orderId;
 		this.customerInformation = customerInformation;
 		this.orderLines = orderLines;
 		this.totalAmount = totalAmount;
 	}
 
-	override string toString() {
+	this(inout OrderId orderId, inout CustomerInformation customerInformation, immutable(OrderLine)[] orderLines, long totalAmount) immutable pure 
+	{
+		this.orderId = new OrderId(orderId.id);
+		this.customerInformation = customerInformation;
+		this.orderLines = orderLines.idup;
+		this.totalAmount = totalAmount;
+	}
+
+	override string toString() const
+	{
 		return classToString(this, orderId, customerInformation, orderLines, totalAmount);
 	}
 }
@@ -28,12 +38,12 @@ class ActivateOrderCommand
 {
 	OrderId orderId;
 	
-	this(OrderId orderId)
+	this(OrderId orderId) pure
 	{
-		this.orderId = orderId;
+		this.orderId = new OrderId(orderId.id);
 	}
 	
-	override string toString()
+	override string toString() const
 	{
 		return classToString(this, orderId);
 	}

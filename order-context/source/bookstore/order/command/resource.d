@@ -41,11 +41,11 @@ class OrderResource : OrderAPI {
 	void placeOrder(string orderId, string customerName, 
 		string customerEmail, string customerAddress, CartDto cart) {
 
-		OrderLine[] lines = cart.lineItems.map!(li => new OrderLine(new ProductId(li.productId), li.title, li.quantity, li.totalPrice)).array;
+		immutable(OrderLine)[] lines = cart.lineItems.map!(li => immutable OrderLine(new ProductId(li.productId), li.title, li.quantity, li.totalPrice)).array;
 
-		auto command = new PlaceOrderCommand(
+		auto command = new immutable PlaceOrderCommand(
 			new OrderId(orderId),
-			new CustomerInformation(customerName, customerEmail, customerAddress), 
+			immutable CustomerInformation(customerName, customerEmail, customerAddress), 
 			lines, 
 			cart.totalPrice
 			);

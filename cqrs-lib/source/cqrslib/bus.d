@@ -7,7 +7,7 @@ enum subscribe = "subscribe";
 
 abstract class Bus 
 {	
-	void dispatch(Object message)
+	void dispatch(const Object message)
 	{
 		auto messageType = message.classinfo;
 		
@@ -21,7 +21,7 @@ abstract class Bus
 	}
 	
 protected:
-	void doDispatch(Object message, EventHandler eventHandler);
+	void doDispatch(const Object message, EventHandler eventHandler);
 
 	struct EventHandler 
 	{
@@ -43,7 +43,7 @@ protected:
  */
 class SynchronousBus : Bus 
 {
-	override void doDispatch(Object message, EventHandler eventHandler) 
+	override void doDispatch(const Object message, EventHandler eventHandler) 
 	{
 		eventHandler.methodDelegate(message);
 	}
@@ -51,7 +51,7 @@ class SynchronousBus : Bus
 
 class AsynchronousBus : Bus
 {
-	override void doDispatch(Object message, EventHandler eventHandler) 
+	override void doDispatch(const Object message, EventHandler eventHandler) 
 	{
 		throw new Exception("Not implemented yet");
 	}	
@@ -77,7 +77,7 @@ private:
 This is the part which does compile-time reflection and collects information on all unary methods on the handler type,
 storing it in an array for runtime use when registering handlers
 */
-alias Handler = void delegate(Object);
+alias Handler = void delegate(const Object);
 
 struct HandlerEntry {
 	Object object;

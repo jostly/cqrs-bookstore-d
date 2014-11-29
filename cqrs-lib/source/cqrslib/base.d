@@ -1,27 +1,20 @@
 module cqrslib.base;
 
 import std.traits, std.conv;
-import std.uuid; 
 import vibe.data.json;
 
 class GenericId {
-	immutable string id;
+	string id;
 
-	this(string id) {
-		import std.regex;
-
-		auto r = matchFirst(id, regex("^" ~ uuidRegex ~ "$"));
-		if (r.empty) {
-			throw new Exception("Illegal id: " ~ id ~ " does not match: " ~ uuidRegex);
-		}
+	this(string id) pure {
 		this.id = id;
 	}
 
-	this() {
-		this(randomUUID().toString());
+	this(string id) immutable pure {
+		this.id = id;
 	}
 
-	override string toString() {
+	override const string toString() {
 		return classToString(this, id);
 	}
 	
@@ -34,26 +27,23 @@ class GenericId {
 		}
 	}
 	
-	Json toJson() {
-		auto json = Json.emptyObject;
-		json["id"] = id;
-		return json;
+	void validate() const
+	{
+		import std.regex, std.uuid;
+	
+		auto r = matchFirst(id, regex("^" ~ uuidRegex ~ "$"));
+		if (r.empty) {
+			throw new Exception("Illegal id: " ~ id ~ " does not match: " ~ uuidRegex);
+		}
 	}
-
+	
 }
 
 unittest {
-	import specd.specd;
-	
-	auto id1 = new GenericId();
-	auto id2 = new GenericId();
-	auto id3 = new GenericId(id2.id);
-	
-	describe("GenericId")
-		.should("be equal if id values are equal", so(id2.must.equal(id3)))
-		.should("have commutative equality", so(id3.must.equal(id2)))
-		.should("not be equal if id values differ", so(id1.must.not.equal(id2)))
-		;	
+	auto id = "c5143565-ef1a-4084-a17b-59132edbb55a";
+	// Should be possible to create both mutable and immutable GenericIds
+	auto a = new GenericId(id);
+	auto b = new immutable GenericId(id);  
 }
 
 private string stringOf(A)(A a) {
@@ -74,7 +64,7 @@ private string lastPartOf(string input) {
 	return input[i+1..$];
 }
 
-string classToString(A...)(Object self, A a) {
+string classToString(A...)(inout Object self, A a) {
 	static if (a.length == 0) return lastPartOf(self.classinfo.name) ~ "()";
 	else return lastPartOf(self.classinfo.name) ~ "(" ~ varargsToList(a) ~ ")";
 }

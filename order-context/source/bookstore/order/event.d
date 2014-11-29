@@ -25,17 +25,17 @@ class OrderPlacedEvent : AbstractDomainEvent!OrderId {
 
 	override Json toJson() {
 		auto json = super.toJson();
-		json["customerInformation"] = customerInformation.toJson();
+		json["customerInformation"] = serializeToJson(customerInformation);
 		json["orderLines"] = serializeToJson(orderLines);
 		json["orderAmount"] = orderAmount;
 		return json;
 	}
 
 	static OrderPlacedEvent fromJson(Json json) {
-		auto id = OrderId.fromJson(json["aggregateId"]);
+		auto id = deserializeJson!OrderId(json["aggregateId"]);
 		auto revision = json["version"].to!int;
 		auto timestamp = json["timestamp"].to!long;
-		auto customerInformation = CustomerInformation.fromJson(json["customerInformation"]);
+		auto customerInformation = deserializeJson!(CustomerInformation)(json["customerInformation"]);
 		auto orderLines = deserializeJson!(OrderLine[])(json["orderLines"]);
 		auto orderAmount = json["orderAmount"].to!long;
 		return new OrderPlacedEvent(id, revision, timestamp, customerInformation, orderLines, orderAmount);

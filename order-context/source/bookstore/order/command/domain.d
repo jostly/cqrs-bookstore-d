@@ -73,8 +73,8 @@ unittest {
 				auto orderId = OrderId.randomId(); 
 				auto productId = ProductId.randomId();
 				order.place(orderId, 
-					new CustomerInformation("a", "b", "c"), 
-					[ new OrderLine(productId, "title", 1, 2) ],
+					CustomerInformation("a", "b", "c"), 
+					[ OrderLine(productId, "title", 1, 2) ],
 					 3);
 				order.uncommittedEvents.length.must == 1;
 
@@ -91,8 +91,8 @@ unittest {
 				auto orderId = OrderId.randomId(); 
 				auto productId = ProductId.randomId();
 				order.place(orderId, 
-					new CustomerInformation("a", "b", "c"), 
-					[ new OrderLine(productId, "title", 1, 2) ],
+					CustomerInformation("a", "b", "c"), 
+					[ OrderLine(productId, "title", 1, 2) ],
 					 3);
 				order.markChangesAsCommitted();
 				

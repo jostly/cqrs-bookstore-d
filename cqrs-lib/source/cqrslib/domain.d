@@ -88,6 +88,11 @@ unittest {
 	import dmocks.mocks;
 	
 	class MyId : GenericId {
+		import std.uuid;
+		
+		this() {
+			super(randomUUID().toString());
+		}
 		
 	}
 	

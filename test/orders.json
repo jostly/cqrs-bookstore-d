@@ -1,0 +1,27 @@
+{
+  "orderId": "45f3b938-9107-4c9c-853c-a6a75ed173c5",
+  "customerName": "Test Testsson",
+  "customerEmail": "test@testmail.test",
+  "customerAddress": "42 Test Street",
+  "cart": {
+    "cartId": "45c5afd0-70e6-11e4-9803-0800200c9a66",
+    "totalPrice": 7912,
+    "totalQuantity": 3,
+    "lineItems": [
+      {
+        "productId": "3edd5901-bdfd-494c-9354-6fd62df28edb",
+        "title": "Domain-Driven Design",
+        "price": 2917,
+        "quantity": 1,
+        "totalPrice": 2917
+      },
+      {
+        "productId": "da54c88d-9f29-4f14-acb8-4b9fbd40af0a",
+        "title": "Agile Testing",
+        "price": 2545,
+        "quantity": 2,
+        "totalPrice": 4995
+      }
+    ]
+  }
+}

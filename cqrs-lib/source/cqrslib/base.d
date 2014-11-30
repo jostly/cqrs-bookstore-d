@@ -35,8 +35,24 @@ class GenericId {
 		if (r.empty) {
 			throw new Exception("Illegal id: " ~ id ~ " does not match: " ~ uuidRegex);
 		}
-	}
+	}	
+}
+
+string currentThreadId()
+{
+	import core.thread;
 	
+	auto t = Thread.getThis;
+	
+	string name = t.name;
+	if (name && name.length > 0)
+	{
+		return name;
+	} 
+	else
+	{
+		return "Thread#" ~ text(t.toHash);
+	}
 }
 
 unittest {

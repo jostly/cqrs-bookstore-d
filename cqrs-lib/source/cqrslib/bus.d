@@ -2,6 +2,8 @@ module cqrslib.bus;
 
 import std.typecons, std.traits, std.algorithm;
 import std.stdio;
+import std.concurrency;
+
 
 enum subscribe = "subscribe";
 
@@ -21,18 +23,18 @@ abstract class Bus
 	}
 	
 protected:
-	void doDispatch(const Object message, EventHandler eventHandler);
+	void doDispatch(immutable Object message, EventHandler eventHandler);
 
 	struct EventHandler 
 	{
-		Object eventHandler;
+		const Object eventHandler;
 		TypeInfo messageTypeHandled;
 		Handler methodDelegate;
 	}
 	
 	EventHandler[] registeredEventHandlers;
 	
-	void registerEventHandler(Object eventHandler, TypeInfo messageTypeHandled, Handler methodDelegate) 
+	void registerEventHandler(const Object eventHandler, TypeInfo messageTypeHandled, Handler methodDelegate) 
 	{
 		registeredEventHandlers ~= EventHandler(eventHandler, messageTypeHandled, methodDelegate);
 	}
@@ -43,23 +45,30 @@ protected:
  */
 class SynchronousBus : Bus 
 {
-	override void doDispatch(const Object message, EventHandler eventHandler) 
+	override void doDispatch(immutable Object message, EventHandler eventHandler) 
 	{
 		eventHandler.methodDelegate(message);
 	}
 }
 
 class AsynchronousBus : Bus
-{
-	override void doDispatch(const Object message, EventHandler eventHandler) 
+{	
+	override void doDispatch(immutable Object message, EventHandler eventHandler) 
 	{
-		throw new Exception("Not implemented yet");
+		spawn(&callHandler, cast(immutable Handler)eventHandler.methodDelegate, message, thisTid);
 	}	
+}
+
+void callHandler(immutable Handler handler, immutable Object message, Tid caller)
+{
+	//import cqrslib.base;
+	//writeln("Async call on ", currentThreadId());
+	handler(message);
 }
 
 // Keeping this outside the Bus class means that the class won't get expanded with all instantiated templates
 // which could be a problem if it is used with a lot of different messages
-void registerHandler(T)(Bus bus, T handler) 
+void registerHandler(T)(Bus bus, const T handler) 
 {
 	// 1. At compile time, gather information about the type T, and create method delegates
 	auto entries = findAllUnaryMethods(handler);
@@ -81,7 +90,7 @@ alias Handler = void delegate(const Object);
 
 struct HandlerEntry 
 {
-	Object object;
+	const Object object;
 	string methodName;
 	TypeInfo messageType;
 	Handler handler;

@@ -46,6 +46,8 @@ class OrderResource : OrderAPI
 	void placeOrder(string orderId, string customerName, 
 		string customerEmail, string customerAddress, CartDto cart) 
 	{
+		import cqrslib.base;
+		logInfo("PlaceOrder called on " ~ currentThreadId());
 
 		immutable(OrderLine)[] lines = cart.lineItems.map!(li => immutable OrderLine(new ProductId(li.productId), li.title, li.quantity, li.totalPrice)).array;
 

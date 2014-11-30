@@ -20,14 +20,16 @@ void sendOptions(HTTPServerRequest req, HTTPServerResponse res)
 
 shared static this()
 {
-	auto commandBus = new SynchronousBus();
+	logInfo("Booting on " ~ currentThreadId());
+	
+	auto commandBus = new AsynchronousBus();
 	auto eventBus = new SynchronousDomainEventBus();
 	
 	auto domainEventStore = new InMemoryDomainEventStore();
 	
 	auto aggregateRepository = new Repository(domainEventStore, eventBus);
 
-	auto orderCommandHandler = new OrderCommandHandler(aggregateRepository);
+	auto orderCommandHandler = new immutable OrderCommandHandler(aggregateRepository);
 	commandBus.registerHandler(orderCommandHandler);
 
 	auto orderProjectionRepository = new InMemoryOrderProjectionRepository();

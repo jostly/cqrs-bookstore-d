@@ -46,9 +46,9 @@ class OrderCommandHandler
 {
 	private Repository repository;
 	
-	this(Repository repository) 
+	this(Repository repository) immutable
 	{
-		this.repository = repository;
+		this.repository = cast(immutable Repository)repository;
 	}
 
 	@subscribe void handlePlaceOrderCommand(immutable PlaceOrderCommand command) 

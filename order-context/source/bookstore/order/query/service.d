@@ -2,15 +2,17 @@ module bookstore.order.query.service;
 
 import bookstore.order.query.orderlist;
 
-class QueryService {
-
+class QueryService 
+{
 	private OrderListDenormalizer orderListDenormalizer;
 	
-	this(OrderListDenormalizer orderListDenormalizer) {
+	this(OrderListDenormalizer orderListDenormalizer) 
+	{
 		this.orderListDenormalizer = orderListDenormalizer;
 	}
 	
-	OrderProjection[] getOrders() {
+	OrderProjection[] getOrders() 
+	{
 		return orderListDenormalizer.getOrders();
 	}
 	

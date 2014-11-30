@@ -4,22 +4,15 @@ import vibe.data.json;
 import cqrslib.event, cqrslib.base;
 import bookstore.order.contract;
 
-class OrderPlacedEvent : AbstractDomainEvent!OrderId {
-
+class OrderPlacedEvent : AbstractDomainEvent!OrderId 
+{
 	CustomerInformation customerInformation;
 	OrderLine[] orderLines;
 	long orderAmount;
 
-	this(OrderId id, int revision, long timestamp, CustomerInformation customerInformation, OrderLine[] orderLines, long orderAmount) {
-		this.aggregateId = id;
-		this.revision = revision;
-		this.timestamp = timestamp;
-		this.customerInformation = customerInformation;
-		this.orderLines = orderLines;
-		this.orderAmount = orderAmount;
-	}
-
-	this(immutable OrderId id, int revision, long timestamp, immutable CustomerInformation customerInformation, inout immutable(OrderLine)[] orderLines, long orderAmount) immutable {
+	this(immutable OrderId id, int revision, long timestamp, immutable CustomerInformation customerInformation, 
+		inout immutable(OrderLine)[] orderLines, long orderAmount) immutable 
+	{
 		super(id, revision, timestamp);
 		this.customerInformation = customerInformation;
 		this.orderLines = orderLines.idup;
@@ -28,7 +21,8 @@ class OrderPlacedEvent : AbstractDomainEvent!OrderId {
 
 	// Adding more properties, we need to override but specify all properties we want to show
 	// So favour composition over inheritance to make this easier on everyone
-	override string toString() {
+	override string toString() const
+	{
 		return classToString(this, aggregateId, revision, timestamp, customerInformation, orderLines, orderAmount);
 	}
 
@@ -39,9 +33,11 @@ class OrderPlacedEvent : AbstractDomainEvent!OrderId {
 	}
 }
 
-class OrderActivatedEvent : AbstractDomainEvent!OrderId {
+class OrderActivatedEvent : AbstractDomainEvent!OrderId 
+{
 	
-	this(OrderId id, int revision, long timestamp) immutable {
+	this(OrderId id, int revision, long timestamp) immutable 
+	{
 		super(new immutable OrderId(id.id), revision, timestamp);
 	}
 	

@@ -7,10 +7,12 @@ import cqrslib.base;
 import vibe.d;
 import specd.specd;
 
-class Order : AggregateRoot!OrderId {
+class Order : AggregateRoot!OrderId 
+{
 	private OrderStatus status = OrderStatus.NEW;
 
-	void place(const OrderId orderId, const CustomerInformation customerInformation, immutable(OrderLine)[] orderLines, long totalAmount) {
+	void place(const OrderId orderId, const CustomerInformation customerInformation, immutable(OrderLine)[] orderLines, long totalAmount) 
+	{
 		assertHasNotBeenPlaced();
 		assertMoreThanZeroOrderLines(orderLines);
 		
@@ -29,28 +31,27 @@ class Order : AggregateRoot!OrderId {
 		}
 	}
 
-	void handleEvent(const OrderPlacedEvent event) {
+	void handleEvent(immutable OrderPlacedEvent event) 
+	{
 	    this.id = new OrderId(event.aggregateId.id);
 	    this.revision = event.revision;
 	    this.timestamp = event.timestamp;
 	    this.status = OrderStatus.PLACED;
-	    logInfo("Order is now: " ~ this.toString());
 	}
 	
-	void handleEvent(const OrderActivatedEvent event)
+	void handleEvent(immutable OrderActivatedEvent event)
 	{
 		this.revision = event.revision;
 		this.timestamp = event.timestamp;
 		this.status = OrderStatus.ACTIVATED;
-	    logInfo("Order is now: " ~ this.toString());
 	}
 
-	override string toString() {
+	override string toString() 
+	{
 		return classToString(this, this.id, this.revision, this.timestamp, this.status);
 	}
 
 private:
-	
 
 	bool orderIsPlaced()
 	{

@@ -5,10 +5,12 @@ public import cqrslib.domain;
 public import cqrslib.base;
 public import cqrslib.bus;
 
-class InMemoryDomainEventStore : DomainEventStore {
+class InMemoryDomainEventStore : DomainEventStore 
+{
 	immutable(DomainEvent)[] domainEvents;
 	
-	immutable(DomainEvent)[] loadEvents(const GenericId id) {
+	immutable(DomainEvent)[] loadEvents(const GenericId id) 
+	{
 		immutable(DomainEvent)[] result;
 		foreach (event; domainEvents)
 		{
@@ -26,37 +28,47 @@ class InMemoryDomainEventStore : DomainEventStore {
 		domainEvents ~= events;
 	}
 	
-	const(DomainEvent)[] getAllEvents() {
+	const(DomainEvent)[] getAllEvents() 
+	{
 		return domainEvents;
 	}
 }
 
-abstract class AbstractDomainEventBus : DomainEventBus {
+abstract class AbstractDomainEventBus : DomainEventBus 
+{
 	protected Bus eventBus;
 	protected Bus replayBus; 
 	
-	override void publish(immutable(DomainEvent)[] events) {
-		foreach(event; events) {
+	override void publish(immutable(DomainEvent)[] events) 
+	{
+		foreach(event; events) 
+		{
 			eventBus.dispatch(event);
 		}
 	}
 	
-	override void republish(const(DomainEvent)[] events) {
-		foreach(event; events) {
-			//replayBus.dispatch(event);
+	override void republish(immutable(DomainEvent)[] events) 
+	{
+		foreach(event; events) 
+		{
+			replayBus.dispatch(event);
 		}		
 	}
 }
 
-class SynchronousDomainEventBus : AbstractDomainEventBus {
-	this() {
+class SynchronousDomainEventBus : AbstractDomainEventBus 
+{
+	this() 
+	{
 		eventBus = new SynchronousBus();
 		replayBus = new SynchronousBus();
 	}
 }
 
-void register(T : DomainEventListener)(AbstractDomainEventBus domainEventBus, T listener) {
-	if (listener.supportsReplay()) {
+void register(T : DomainEventListener)(AbstractDomainEventBus domainEventBus, T listener) 
+{
+	if (listener.supportsReplay()) 
+	{
 		registerHandler(domainEventBus.replayBus, listener);
 	}
 	registerHandler(domainEventBus.eventBus, listener);

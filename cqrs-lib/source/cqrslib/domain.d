@@ -6,9 +6,8 @@ import cqrslib.dispatcher;
 import cqrslib.bus;
 import std.traits, std.conv;
 
-
-class AggregateRoot(ID : GenericId) {
-	
+class AggregateRoot(ID : GenericId) 
+{	
 	@property immutable(DomainEvent)[] uncommittedEvents() { return uncommittedEvents_; }
 	@property bool hasUncommittedEvents() { return uncommittedEvents_.length > 0; }
 		
@@ -16,26 +15,37 @@ class AggregateRoot(ID : GenericId) {
 	int revision;
 	long timestamp;
 	
-	void markChangesAsCommitted() {
+	void markChangesAsCommitted() 
+	{
 		uncommittedEvents_ = [];
 	}
 	
 protected:
-	int nextRevision() { return revision + 1; }
-	long now() {
+	int nextRevision() 
+	{ 
+		return revision + 1; 
+	}
+	
+	long now() 
+	{
 		import std.datetime;
 		auto time = Clock.currTime();
 		return time.toUnixTime() * 1000 + time.fracSec.msecs;
 	}
 	
 	// TODO use a Dispatcher or Bus, no need to do the exact same thing three times. :) 
-	void applyChange(T)(T self, immutable DomainEvent event, bool isNew = true) {		
-		static if (__traits(hasMember, T, "handleEvent")) {
-			foreach (m; __traits(getOverloads, T, "handleEvent")) {
-				static if (arity!m == 1) {
+	void applyChange(T)(T self, immutable DomainEvent event, bool isNew = true) 
+	{		
+		static if (__traits(hasMember, T, "handleEvent")) 
+		{
+			foreach (m; __traits(getOverloads, T, "handleEvent")) 
+			{
+				static if (arity!m == 1) 
+				{
 					alias Base = ParameterTypeTuple!m[0];
 					enum typeInfo = typeid(Unqual!Base);
-					if (typeInfo == event.classinfo) {
+					if (typeInfo == event.classinfo) 
+					{
 						self.handleEvent(cast(Base)event);
 					}
 				}
@@ -44,8 +54,10 @@ protected:
 		if (isNew) persistEvent(event);
 	}
 	
-	void loadFromHistory(T)(T self, immutable(DomainEvent)[] history) {
-		foreach (event; history) {
+	void loadFromHistory(T)(T self, immutable(DomainEvent)[] history) 
+	{
+		foreach (event; history) 
+		{
 			applyChange(self, event, false);
 		}
 	}
@@ -53,50 +65,61 @@ protected:
 private:
 	immutable(DomainEvent)[] uncommittedEvents_;	
 	
-	void persistEvent(immutable DomainEvent event) {
-		uncommittedEvents_ ~= event;
+	void persistEvent(immutable DomainEvent event) 
+	{ 
+		uncommittedEvents_ ~= event; 
 	}
 }
 
-class Repository {
+class Repository 
+{
 	private DomainEventStore domainEventStore;
 	private DomainEventBus dispatcher;
 	
-	this(DomainEventStore store, DomainEventBus dispatcher) {
+	this(DomainEventStore store, DomainEventBus dispatcher) 
+	{
 		this.domainEventStore = store;
 		this.dispatcher = dispatcher;
 	}	
 	
-	void save(ID : GenericId)(AggregateRoot!ID aggregateRoot) {
-		if (aggregateRoot.hasUncommittedEvents) {
+	void save(ID : GenericId)(AggregateRoot!ID aggregateRoot) 
+	{
+		if (aggregateRoot.hasUncommittedEvents) 
+		{
 			domainEventStore.save(aggregateRoot.id, aggregateRoot.uncommittedEvents);
 			dispatcher.publish(aggregateRoot.uncommittedEvents);
 			aggregateRoot.markChangesAsCommitted();
 		}
 	}
 	
-	AR load(AR : AggregateRoot!ID, ID : GenericId)(ID id) {
+	AR load(AR : AggregateRoot!ID, ID : GenericId)(const ID id) 
+	{
 		auto aggregateRoot = new AR();
 		aggregateRoot.loadFromHistory(aggregateRoot, domainEventStore.loadEvents(id));
 		return aggregateRoot;
 	}
 }
 
-unittest {
+unittest 
+{
 	import specd.specd;
 	import dmocks.mocks;
 	
-	class MyId : GenericId {
+	class MyId : GenericId 
+	{
 		import std.uuid;
 		
-		this() {
+		this() 
+		{
 			super(randomUUID().toString());
 		}
 		
 	}
 	
-	class MyDE : AbstractDomainEvent!MyId {
-		this(MyId id, int rev, long t) {
+	class MyDE : AbstractDomainEvent!MyId 
+	{
+		this(MyId id, int rev, long t) 
+		{
 			super(id, rev, t);
 		}
 	}

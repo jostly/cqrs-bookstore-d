@@ -51,13 +51,8 @@ class SynchronousBus : Bus
 
 class AsynchronousBus : Bus
 {
-	import std.concurrency;
-	
 	override void doDispatch(const Object message, EventHandler eventHandler) 
 	{
-		receive(
-			(Object message) { eventHandler.methodDelegate(message); }
-		);
 		throw new Exception("Not implemented yet");
 	}	
 }
@@ -84,16 +79,19 @@ storing it in an array for runtime use when registering handlers
 */
 alias Handler = void delegate(const Object);
 
-struct HandlerEntry {
+struct HandlerEntry 
+{
 	Object object;
 	string methodName;
 	TypeInfo messageType;
 	Handler handler;
 	string[] attributes;
-	bool isSubscription() {
+	bool isSubscription() 
+	{
 		bool contains(string[] arr, string value) 
 		{
-			foreach(a; arr) {
+			foreach(a; arr) 
+			{
 				if (a == value) return true;
 			}
 			return false;
@@ -133,13 +131,17 @@ HandlerEntry[] findAllUnaryMethods(T)(T obj)
 	return entries;	
 }
 
-void assertNoOverloadedSubscribes(HandlerEntry[] entries) {
+void assertNoOverloadedSubscribes(HandlerEntry[] entries) 
+{
 	int[string] counts;
-	foreach(e; entries) {
+	foreach(e; entries) 
+	{
 		counts[e.methodName]++;
 	}
-	foreach(e; entries) {
-		if(e.isSubscription()) {
+	foreach(e; entries) 
+	{
+		if(e.isSubscription()) 
+		{
 			assert(counts[e.methodName] <= 1, "Subscriptions on overloaded methods are not allowed: " ~ e.methodName);
 		}
 	}

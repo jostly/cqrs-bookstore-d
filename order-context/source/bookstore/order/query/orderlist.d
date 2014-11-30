@@ -5,7 +5,8 @@ import bookstore.order.event;
 import cqrslib.bus : subscribe;
 import cqrslib.event : DomainEventListener;
 
-interface OrderProjectionRepository {
+interface OrderProjectionRepository 
+{
 
 	void save(OrderProjection orderProjection);
 
@@ -14,7 +15,8 @@ interface OrderProjectionRepository {
 	OrderProjection[] listOrdersByTimestamp();
 }
 
-struct OrderLineProjection {
+struct OrderLineProjection 
+{
 	ProductId productId;
 	string title;
 	int quantity;
@@ -31,7 +33,8 @@ private OrderLineProjection[] lineProjection(OrderLine[] lines)
 	return result;
 }
 
-struct OrderProjection {
+struct OrderProjection 
+{
 	OrderId orderId;
 	long orderPlacedTimestamp;
 	long orderAmount;
@@ -40,43 +43,35 @@ struct OrderProjection {
 	OrderStatus status;
 }
 
-class OrderListDenormalizer : DomainEventListener {
+class OrderListDenormalizer : DomainEventListener 
+{
 	private OrderProjectionRepository repository;
 	
-	this(OrderProjectionRepository repository) {
+	this(OrderProjectionRepository repository) 
+	{
 		this.repository = repository;
 	}
 		
-	@subscribe void handleOrderPlacedEvent(OrderPlacedEvent event) {
+	@subscribe void handleOrderPlacedEvent(OrderPlacedEvent event) 
+	{
 		repository.save(OrderProjection(event.aggregateId, event.timestamp, event.orderAmount, event.customerInformation.customerName,
 				lineProjection(event.orderLines), OrderStatus.PLACED));
 	}
 	
-	@subscribe void handleOrderActivatedEvent(OrderActivatedEvent event) {
+	@subscribe void handleOrderActivatedEvent(OrderActivatedEvent event) 
+	{
 		OrderProjection projection = repository.getById(event.aggregateId);
 		projection.status = OrderStatus.ACTIVATED;
 		repository.save(projection);
 	}	
 	
-	OrderProjection[] getOrders() {
+	OrderProjection[] getOrders() 
+	{
 		return repository.listOrdersByTimestamp();
 	}
 	
-	bool supportsReplay() { return true; }
-}
-
-unittest {
-	import specd.specd;
-	import dmocks.mocks;
-	/* TODO
-	describe("OrderListDenormalizer")
-		.should("store order projection on order placed", {
-			Mocker mocker = new Mocker();
-			OrderProjectionRepository repository = mocker.mock!(OrderProjectionRepository);
-							
-			mocker.expect(repository.save();
-				
-			})
-		;
-	*/
+	bool supportsReplay() 
+	{ 
+		return true; 
+	}
 }

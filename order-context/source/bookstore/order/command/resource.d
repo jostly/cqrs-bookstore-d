@@ -6,7 +6,8 @@ import bookstore.order.infrastructure;
 import cqrslib.bus;
 import vibe.d;
 
-interface OrderAPI {
+interface OrderAPI 
+{
 
 	@path("")
 	void placeOrder(string orderId, string customerName, string customerEmail, string customerAddress, CartDto cart);
@@ -16,14 +17,16 @@ interface OrderAPI {
 	
 }
 
-struct CartDto {
+struct CartDto 
+{
 	string cartId;
 	long totalPrice;
 	int totalQuantity;
 	LineItemDto[] lineItems;
 }
 
-struct LineItemDto {
+struct LineItemDto 
+{
 	string productId;
 	string title;
 	long price;
@@ -31,15 +34,18 @@ struct LineItemDto {
 	long totalPrice;
 }
 
-class OrderResource : OrderAPI {
+class OrderResource : OrderAPI 
+{
 	private Bus commandBus;
 
-	this(Bus commandBus) {
+	this(Bus commandBus) 
+	{
 		this.commandBus = commandBus;
 	}
 
 	void placeOrder(string orderId, string customerName, 
-		string customerEmail, string customerAddress, CartDto cart) {
+		string customerEmail, string customerAddress, CartDto cart) 
+	{
 
 		immutable(OrderLine)[] lines = cart.lineItems.map!(li => immutable OrderLine(new ProductId(li.productId), li.title, li.quantity, li.totalPrice)).array;
 

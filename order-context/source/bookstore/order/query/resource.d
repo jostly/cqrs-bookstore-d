@@ -5,8 +5,8 @@ public import bookstore.order.query.orderlist;
 public import cqrslib.event;
 import vibe.d;
 
-interface QueryAPI {
-	
+interface QueryAPI 
+{	
 	@path("orders")
 	OrderProjection[] getOrders();
 	
@@ -14,24 +14,28 @@ interface QueryAPI {
 	Json getAllEvents();
 }
 
-class QueryResource : QueryAPI {
-	
+class QueryResource : QueryAPI 
+{	
 	private QueryService queryService;
 	private DomainEventStore domainEventStore;
 	
-	this(QueryService queryService, DomainEventStore domainEventStore) {
+	this(QueryService queryService, DomainEventStore domainEventStore) 
+	{
 		this.queryService = queryService;
 		this.domainEventStore = domainEventStore;
 	}
 	
-	override OrderProjection[] getOrders() {
+	override OrderProjection[] getOrders() 
+	{
 		return queryService.getOrders();
 	}
 	
-	override Json getAllEvents() {		
+	override Json getAllEvents() 
+	{		
 		auto allEvents = domainEventStore.getAllEvents();
 		Json result = Json.emptyArray;
-		foreach (event; allEvents) {
+		foreach (event; allEvents) 
+		{
 			Json row = Json.emptyArray;
 			row ~= Json(event.classinfo.name);
 			row ~= event.eventToJson();

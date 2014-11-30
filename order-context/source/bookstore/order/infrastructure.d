@@ -65,6 +65,15 @@ class SynchronousDomainEventBus : AbstractDomainEventBus
 	}
 }
 
+class AsynchronousDomainEventBus : AbstractDomainEventBus 
+{
+	this() 
+	{
+		eventBus = new AsynchronousBus();
+		replayBus = new AsynchronousBus();
+	}
+}
+
 void register(T : DomainEventListener)(AbstractDomainEventBus domainEventBus, T listener) 
 {
 	if (listener.supportsReplay()) 

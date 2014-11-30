@@ -7,10 +7,9 @@ import cqrslib.event : DomainEventListener;
 
 interface OrderProjectionRepository 
 {
-
 	void save(OrderProjection orderProjection);
 
-	OrderProjection getById(OrderId orderId);
+	OrderProjection getById(const OrderId orderId);
 
 	OrderProjection[] listOrdersByTimestamp();
 }
@@ -23,12 +22,12 @@ struct OrderLineProjection
 	long unitPrice;
 }
 
-private OrderLineProjection[] lineProjection(OrderLine[] lines)
+private OrderLineProjection[] lineProjection(const(OrderLine)[] lines)
 {
 	OrderLineProjection[] result;
 	foreach (line; lines)
 	{
-		result ~= OrderLineProjection(line.productId, line.title, line.quantity, line.unitPrice);
+		result ~= OrderLineProjection(new ProductId(line.productId.id), line.title, line.quantity, line.unitPrice);
 	}
 	return result;
 }
@@ -52,13 +51,13 @@ class OrderListDenormalizer : DomainEventListener
 		this.repository = repository;
 	}
 		
-	@subscribe void handleOrderPlacedEvent(OrderPlacedEvent event) 
+	@subscribe void handleOrderPlacedEvent(immutable OrderPlacedEvent event) 
 	{
-		repository.save(OrderProjection(event.aggregateId, event.timestamp, event.orderAmount, event.customerInformation.customerName,
+		repository.save(OrderProjection(new OrderId(event.aggregateId.id), event.timestamp, event.orderAmount, event.customerInformation.customerName,
 				lineProjection(event.orderLines), OrderStatus.PLACED));
 	}
 	
-	@subscribe void handleOrderActivatedEvent(OrderActivatedEvent event) 
+	@subscribe void handleOrderActivatedEvent(immutable OrderActivatedEvent event) 
 	{
 		OrderProjection projection = repository.getById(event.aggregateId);
 		projection.status = OrderStatus.ACTIVATED;

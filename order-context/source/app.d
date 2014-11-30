@@ -23,7 +23,7 @@ shared static this()
 	logInfo("Booting on " ~ currentThreadId());
 	
 	auto commandBus = new AsynchronousBus();
-	auto eventBus = new SynchronousDomainEventBus();
+	auto eventBus = new AsynchronousDomainEventBus();
 	
 	auto domainEventStore = new InMemoryDomainEventStore();
 	

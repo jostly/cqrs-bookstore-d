@@ -11,7 +11,7 @@ class InMemoryOrderProjectionRepository : OrderProjectionRepository
 		orders[orderProjection.orderId.toString()] = orderProjection;
 	}
 
-	OrderProjection getById(OrderId orderId) 
+	OrderProjection getById(const OrderId orderId) 
 	{
 		return orders[orderId.toString()];
 	}

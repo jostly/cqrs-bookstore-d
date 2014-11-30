@@ -6,6 +6,7 @@ import std.concurrency;
 
 
 enum subscribe = "subscribe";
+alias Handler = void delegate(immutable Object);
 
 abstract class Bus 
 {	
@@ -61,8 +62,8 @@ class AsynchronousBus : Bus
 
 void callHandler(immutable Handler handler, immutable Object message, Tid caller)
 {
-	//import cqrslib.base;
-	//writeln("Async call on ", currentThreadId());
+	import cqrslib.base;
+	writeln("Async call on ", currentThreadId(), " to ", handler, " with ", message.classinfo.name);
 	handler(message);
 }
 
@@ -86,8 +87,6 @@ private:
 This is the part which does compile-time reflection and collects information on all unary methods on the handler type,
 storing it in an array for runtime use when registering handlers
 */
-alias Handler = void delegate(const Object);
-
 struct HandlerEntry 
 {
 	const Object object;
@@ -126,10 +125,12 @@ HandlerEntry[] findAllUnaryMethods(T)(T obj)
 					enum methodName = __traits(identifier, overload);
 							
 					alias Base = ParameterTypeTuple!overload[0];
-					enum typeInfo = typeid(Unqual!Base);
-												
-					entries ~= HandlerEntry(obj, methodName, typeInfo, cast(Handler)mixin("&obj." ~ methodName), [__traits(getAttributes, overload)]);
-										
+					static if (is(Base == immutable))
+					{
+						enum typeInfo = typeid(Unqual!Base);
+													
+						entries ~= HandlerEntry(obj, methodName, typeInfo, cast(Handler)mixin("&obj." ~ methodName), [__traits(getAttributes, overload)]);					
+					}
 				}
 			}
 			

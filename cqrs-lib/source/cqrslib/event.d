@@ -4,50 +4,42 @@ import cqrslib.base;
 import vibe.data.json;
 
 abstract class DomainEvent {
-	@property GenericId id();
-	@property int revision();
-	@property long timestamp();
-	Json toJson();	
+	Json eventToJson() const;
+	
+	bool hasId(const GenericId id) const;
 }
 
 abstract class AbstractDomainEvent(T : GenericId) : DomainEvent {
 
-private:
-	T aggregateId_;	
-	int revision_; // version is a reserved word in D, so let's get creative...
-	long timestamp_;
+	T aggregateId;	
+	@name("version")
+	int revision; // version is a reserved word in D, so let's get creative...
+	long timestamp;
+	
+	this() {		
+	}
 
-public:
-	@property T aggregateId() { return aggregateId_; }
-	override @property GenericId id() { return aggregateId_; }
-	override @property int revision() { return revision_; }
-	override @property long timestamp() { return timestamp_; }
-
-	this(T aggregateId, int revision, long timestamp) {
-		this.aggregateId_ = aggregateId;
-		this.revision_ = revision;
-		this.timestamp_ = timestamp;
+	this(immutable T aggregateId, int revision, long timestamp) immutable {
+		this.aggregateId = aggregateId;
+		this.revision = revision;
+		this.timestamp = timestamp;
+	}
+	
+	override bool hasId(const GenericId id) const {
+		return (id == aggregateId);
 	}
 
 	// TODO: equals, hash
 
 	override string toString() {
 		return classToString(this, aggregateId, revision, timestamp);
-	}
-	
-	override Json toJson() {
-		auto json = Json.emptyObject;
-		json["aggregateId"] = serializeToJson(aggregateId);
-		json["version"] = revision;
-		json["timestamp"] = timestamp;
-		return json;
-	}
+	}	
 }
 
 interface DomainEventStore {
-	DomainEvent[] loadEvents(GenericId id);
-	void save(GenericId id, DomainEvent[] events);
-	DomainEvent[] getAllEvents();
+	immutable(DomainEvent)[] loadEvents(const GenericId id);
+	void save(const(GenericId) id, immutable(DomainEvent)[] events);
+	const(DomainEvent)[] getAllEvents();
 }
 
 interface DomainEventListener {
@@ -55,6 +47,6 @@ interface DomainEventListener {
 }
 
 interface DomainEventBus {
-	void publish(DomainEvent[] events);
-	void republish(DomainEvent[] events);
+	void publish(immutable(DomainEvent)[] events);
+	void republish(const(DomainEvent)[] events);
 }

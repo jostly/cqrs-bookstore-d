@@ -9,7 +9,7 @@ import std.traits, std.conv;
 
 class AggregateRoot(ID : GenericId) {
 	
-	@property DomainEvent[] uncommittedEvents() { return cast(DomainEvent[])uncommittedEvents_; }
+	@property immutable(DomainEvent)[] uncommittedEvents() { return uncommittedEvents_; }
 	@property bool hasUncommittedEvents() { return uncommittedEvents_.length > 0; }
 		
 	ID id;
@@ -29,15 +29,14 @@ protected:
 	}
 	
 	// TODO use a Dispatcher or Bus, no need to do the exact same thing three times. :) 
-	void applyChange(T)(T self, DomainEvent event, bool isNew = true) {
-		
+	void applyChange(T)(T self, immutable DomainEvent event, bool isNew = true) {		
 		static if (__traits(hasMember, T, "handleEvent")) {
 			foreach (m; __traits(getOverloads, T, "handleEvent")) {
 				static if (arity!m == 1) {
 					alias Base = ParameterTypeTuple!m[0];
-					enum typeInfo = typeid(Base);
+					enum typeInfo = typeid(Unqual!Base);
 					if (typeInfo == event.classinfo) {
-						self.handleEvent(cast(Base)cast(void *)event);
+						self.handleEvent(cast(Base)event);
 					}
 				}
 			}
@@ -45,16 +44,16 @@ protected:
 		if (isNew) persistEvent(event);
 	}
 	
-	void loadFromHistory(T)(T self, DomainEvent[] history) {
+	void loadFromHistory(T)(T self, immutable(DomainEvent)[] history) {
 		foreach (event; history) {
 			applyChange(self, event, false);
 		}
 	}
 	
 private:
-	DomainEvent[] uncommittedEvents_;	
+	immutable(DomainEvent)[] uncommittedEvents_;	
 	
-	void persistEvent(DomainEvent event) {
+	void persistEvent(immutable DomainEvent event) {
 		uncommittedEvents_ ~= event;
 	}
 }

@@ -49,13 +49,12 @@ class OrderResource : OrderAPI {
 			lines, 
 			cart.totalPrice
 			);
-
 		commandBus.dispatch(command);
 	}
 	
 	void activateOrder(string orderId) 
 	{
-		auto command = new ActivateOrderCommand(new OrderId(orderId));
+		auto command = new immutable ActivateOrderCommand(new OrderId(orderId));
 		commandBus.dispatch(command);
 	}
 	

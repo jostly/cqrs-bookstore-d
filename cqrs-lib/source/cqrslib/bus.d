@@ -7,7 +7,7 @@ enum subscribe = "subscribe";
 
 abstract class Bus 
 {	
-	void dispatch(const Object message)
+	void dispatch(immutable Object message)
 	{
 		auto messageType = message.classinfo;
 		
@@ -51,8 +51,13 @@ class SynchronousBus : Bus
 
 class AsynchronousBus : Bus
 {
+	import std.concurrency;
+	
 	override void doDispatch(const Object message, EventHandler eventHandler) 
 	{
+		receive(
+			(Object message) { eventHandler.methodDelegate(message); }
+		);
 		throw new Exception("Not implemented yet");
 	}	
 }
@@ -114,7 +119,7 @@ HandlerEntry[] findAllUnaryMethods(T)(T obj)
 					enum methodName = __traits(identifier, overload);
 							
 					alias Base = ParameterTypeTuple!overload[0];
-					enum typeInfo = typeid(Base);
+					enum typeInfo = typeid(Unqual!Base);
 												
 					entries ~= HandlerEntry(obj, methodName, typeInfo, cast(Handler)mixin("&obj." ~ methodName), [__traits(getAttributes, overload)]);
 										

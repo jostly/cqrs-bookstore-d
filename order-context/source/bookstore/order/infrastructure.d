@@ -6,13 +6,13 @@ public import cqrslib.base;
 public import cqrslib.bus;
 
 class InMemoryDomainEventStore : DomainEventStore {
-	DomainEvent[] domainEvents;
+	immutable(DomainEvent)[] domainEvents;
 	
-	DomainEvent[] loadEvents(GenericId id) {
-		DomainEvent[] result;
+	immutable(DomainEvent)[] loadEvents(const GenericId id) {
+		immutable(DomainEvent)[] result;
 		foreach (event; domainEvents)
 		{
-			if (event.id == id)
+			if (event.hasId(id))
 			{
 				result ~= event;
 			}
@@ -21,11 +21,12 @@ class InMemoryDomainEventStore : DomainEventStore {
 		return result;
 	}
 	
-	void save(GenericId id, DomainEvent[] events) {
+	void save(const(GenericId) id, immutable(DomainEvent)[] events)
+	{
 		domainEvents ~= events;
 	}
 	
-	DomainEvent[] getAllEvents() {
+	const(DomainEvent)[] getAllEvents() {
 		return domainEvents;
 	}
 }
@@ -34,15 +35,15 @@ abstract class AbstractDomainEventBus : DomainEventBus {
 	protected Bus eventBus;
 	protected Bus replayBus; 
 	
-	void publish(DomainEvent[] events) {
+	override void publish(immutable(DomainEvent)[] events) {
 		foreach(event; events) {
 			eventBus.dispatch(event);
 		}
 	}
 	
-	void republish(DomainEvent[] events) {
+	override void republish(const(DomainEvent)[] events) {
 		foreach(event; events) {
-			replayBus.dispatch(event);
+			//replayBus.dispatch(event);
 		}		
 	}
 }

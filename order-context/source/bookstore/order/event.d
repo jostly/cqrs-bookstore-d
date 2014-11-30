@@ -8,12 +8,21 @@ class OrderPlacedEvent : AbstractDomainEvent!OrderId {
 
 	CustomerInformation customerInformation;
 	OrderLine[] orderLines;
-	immutable long orderAmount;
+	long orderAmount;
 
 	this(OrderId id, int revision, long timestamp, CustomerInformation customerInformation, OrderLine[] orderLines, long orderAmount) {
-		super(id, revision, timestamp);
+		this.aggregateId = id;
+		this.revision = revision;
+		this.timestamp = timestamp;
 		this.customerInformation = customerInformation;
 		this.orderLines = orderLines;
+		this.orderAmount = orderAmount;
+	}
+
+	this(immutable OrderId id, int revision, long timestamp, immutable CustomerInformation customerInformation, inout immutable(OrderLine)[] orderLines, long orderAmount) immutable {
+		super(id, revision, timestamp);
+		this.customerInformation = customerInformation;
+		this.orderLines = orderLines.idup;
 		this.orderAmount = orderAmount;
 	}
 
@@ -23,27 +32,21 @@ class OrderPlacedEvent : AbstractDomainEvent!OrderId {
 		return classToString(this, aggregateId, revision, timestamp, customerInformation, orderLines, orderAmount);
 	}
 
-	override Json toJson() {
-		auto json = super.toJson();
-		json["customerInformation"] = serializeToJson(customerInformation);
-		json["orderLines"] = serializeToJson(orderLines);
-		json["orderAmount"] = orderAmount;
-		return json;
-	}
-
-	static OrderPlacedEvent fromJson(Json json) {
-		auto id = deserializeJson!OrderId(json["aggregateId"]);
-		auto revision = json["version"].to!int;
-		auto timestamp = json["timestamp"].to!long;
-		auto customerInformation = deserializeJson!(CustomerInformation)(json["customerInformation"]);
-		auto orderLines = deserializeJson!(OrderLine[])(json["orderLines"]);
-		auto orderAmount = json["orderAmount"].to!long;
-		return new OrderPlacedEvent(id, revision, timestamp, customerInformation, orderLines, orderAmount);
+	// serializeToJson needs compile-time type info
+	override Json eventToJson() const
+	{
+		return serializeToJson(this);
 	}
 }
 
 class OrderActivatedEvent : AbstractDomainEvent!OrderId {
-	this(OrderId id, int revision, long timestamp) {
-		super(id, revision, timestamp);
+	
+	this(OrderId id, int revision, long timestamp) immutable {
+		super(new immutable OrderId(id.id), revision, timestamp);
+	}
+	
+	override Json eventToJson() const
+	{
+		return serializeToJson(this);
 	}
 }

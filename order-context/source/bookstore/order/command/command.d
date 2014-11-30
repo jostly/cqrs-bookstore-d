@@ -38,7 +38,7 @@ class ActivateOrderCommand
 {
 	OrderId orderId;
 	
-	this(OrderId orderId) pure
+	this(OrderId orderId) immutable
 	{
 		this.orderId = new OrderId(orderId.id);
 	}
@@ -56,7 +56,8 @@ class OrderCommandHandler {
 		this.repository = repository;
 	}
 
-	@subscribe void handlePlaceOrderCommand(PlaceOrderCommand command) {
+	@subscribe void handlePlaceOrderCommand(immutable PlaceOrderCommand command) {
+		import std.stdio;
 		auto order = new Order;
 		order.place(command.orderId, command.customerInformation, command.orderLines, command.totalAmount);
 		repository.save(order);

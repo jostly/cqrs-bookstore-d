@@ -10,12 +10,12 @@ import specd.specd;
 class Order : AggregateRoot!OrderId {
 	private OrderStatus status = OrderStatus.NEW;
 
-	void place(OrderId orderId, CustomerInformation customerInformation, OrderLine[] orderLines, long totalAmount) {
+	void place(const OrderId orderId, const CustomerInformation customerInformation, immutable(OrderLine)[] orderLines, long totalAmount) {
 		assertHasNotBeenPlaced();
 		assertMoreThanZeroOrderLines(orderLines);
 		
 		applyChange(this,
-			new OrderPlacedEvent(orderId, nextRevision(), now(), customerInformation, orderLines, totalAmount)
+			new immutable OrderPlacedEvent(new immutable OrderId(orderId.id), nextRevision(), now(), customerInformation, orderLines, totalAmount)
 		);
 	}
 	
@@ -24,20 +24,20 @@ class Order : AggregateRoot!OrderId {
 		if (orderIsPlaced())
 		{
 			applyChange(this, 
-				new OrderActivatedEvent(id, nextRevision(), now())
+				new immutable OrderActivatedEvent(id, nextRevision(), now())
 			);
 		}
 	}
 
-	void handleEvent(OrderPlacedEvent event) {
-	    this.id = event.aggregateId;
+	void handleEvent(const OrderPlacedEvent event) {
+	    this.id = new OrderId(event.aggregateId.id);
 	    this.revision = event.revision;
 	    this.timestamp = event.timestamp;
 	    this.status = OrderStatus.PLACED;
 	    logInfo("Order is now: " ~ this.toString());
 	}
 	
-	void handleEvent(OrderActivatedEvent event)
+	void handleEvent(const OrderActivatedEvent event)
 	{
 		this.revision = event.revision;
 		this.timestamp = event.timestamp;
@@ -61,7 +61,7 @@ private:
 		assert(id is null, "Order has already been placed");
 	}
 
-	void assertMoreThanZeroOrderLines(OrderLine[] orderLines) {
+	void assertMoreThanZeroOrderLines(const(OrderLine)[] orderLines) {
 		assert(orderLines.length > 0, "Cannot place an order without any order lines");
 	}
 }

@@ -34,7 +34,7 @@ class QueryResource : QueryAPI {
 		foreach (event; allEvents) {
 			Json row = Json.emptyArray;
 			row ~= Json(event.classinfo.name);
-			row ~= event.toJson();
+			row ~= event.eventToJson();
 			result.appendArrayElement(row);  
 		}
 		return result;

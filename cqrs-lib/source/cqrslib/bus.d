@@ -2,7 +2,7 @@ module cqrslib.bus;
 
 import std.typecons, std.traits, std.algorithm;
 import std.stdio;
-import std.concurrency;
+import vibe.core.core;
 
 
 enum subscribe = "subscribe";
@@ -56,15 +56,17 @@ class AsynchronousBus : Bus
 {	
 	override void doDispatch(immutable Object message, EventHandler eventHandler) 
 	{
-		spawn(&callHandler, cast(immutable Handler)eventHandler.methodDelegate, message, thisTid);
+		runWorkerTask(&callHandler, cast(shared Handler)eventHandler.methodDelegate, cast(shared Object)message); 
 	}	
 }
 
-void callHandler(immutable Handler handler, immutable Object message, Tid caller)
+// Can't get immutable to work with vibe's task runner, so casting it to shared to get around that
+private void callHandler(shared Handler handler, shared Object message)
 {
 	import cqrslib.base;
-	writeln("Async call on ", currentThreadId(), " to ", handler, " with ", message.classinfo.name);
-	handler(message);
+	immutable t = currentThreadId();	
+	writeln("Async call on ", t, " to ", handler, " with ", message.classinfo.name);
+	handler(cast(immutable Object)message);			
 }
 
 // Keeping this outside the Bus class means that the class won't get expanded with all instantiated templates

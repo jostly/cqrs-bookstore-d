@@ -57,6 +57,24 @@ unittest
 	auto b = new immutable ProductId(id);  
 }
 
+class PublisherContractId : GenericId
+{
+	this(string id) pure
+	{
+		super(id);
+	}
+	
+	this() pure
+	{
+		super("");
+	}
+	
+	static PublisherContractId randomId()
+	{
+		return new PublisherContractId(randomUUID().toString());
+	}
+}
+
 struct CustomerInformation 
 {
 	string customerName;

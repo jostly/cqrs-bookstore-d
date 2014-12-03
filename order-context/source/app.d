@@ -36,8 +36,10 @@ shared static this()
 
 	auto orderListDenormalizer = new OrderListDenormalizer(orderProjectionRepository);
 	eventBus.register(orderListDenormalizer);
+	
+	auto productCatalogClient = new ProductCatalogClient("http://127.0.0.1:8090/");
 
-	auto queryService = new QueryService(orderListDenormalizer);
+	auto queryService = new QueryService(orderListDenormalizer, productCatalogClient);
 
 	auto router = new URLRouter;
 	router.any("*", &accessFilter);

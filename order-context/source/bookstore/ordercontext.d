@@ -1,5 +1,6 @@
 module bookstore.ordercontext;
 
+public import bookstore.order.query.client;
 public import bookstore.order.query.resource;
 public import bookstore.order.query.orderlist;
 public import bookstore.order.query.infrastructure;

@@ -33,7 +33,6 @@ protected:
 		return time.toUnixTime() * 1000 + time.fracSec.msecs;
 	}
 	
-	// TODO use a Dispatcher or Bus, no need to do the exact same thing three times. :) 
 	void applyChange(T)(T self, immutable DomainEvent event, bool isNew = true) 
 	{		
 		static if (__traits(hasMember, T, "handleEvent")) 
@@ -47,11 +46,13 @@ protected:
 					if (typeInfo == event.classinfo) 
 					{
 						self.handleEvent(cast(Base)event);
+						if (isNew) persistEvent(event);
+						return;
 					}
 				}
 			}
 		}
-		if (isNew) persistEvent(event);
+		throw new Exception("Aggregate Root of type " ~ text(typeid(T)) ~ " has no handler for event " ~ event.classinfo.name);
 	}
 	
 	void loadFromHistory(T)(T self, immutable(DomainEvent)[] history) 

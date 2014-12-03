@@ -3,7 +3,7 @@ module cqrslib.bus;
 import std.typecons, std.traits, std.algorithm;
 import std.stdio;
 import vibe.core.core;
-
+import cqrslib.base;
 
 enum subscribe = "subscribe";
 alias Handler = void delegate(immutable Object);
@@ -63,9 +63,7 @@ class AsynchronousBus : Bus
 // Can't get immutable to work with vibe's task runner, so casting it to shared to get around that
 private void callHandler(shared Handler handler, shared Object message)
 {
-	import cqrslib.base;
-	immutable t = currentThreadId();	
-	writeln("Async call on ", t, " to ", handler, " with ", message.classinfo.name);
+	debug writeln("Async call on ", currentThreadId(), " to ", handler, " with ", message.classinfo.name);
 	handler(cast(immutable Object)message);			
 }
 
